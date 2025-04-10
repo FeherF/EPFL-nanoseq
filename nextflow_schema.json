@@ -1,10 +1,21 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/nanoseq/master/nextflow_schema.json",
     "title": "nf-core/nanoseq pipeline parameters",
     "description": "A pipeline to demultiplex, QC and map Nanopore data",
     "type": "object",
-    "$defs": {
+    "definitions": {
+        "dna_modification_analysis_option": {
+            "title": "DNA modification analysis option",
+            "type": "object",
+            "description": "",
+            "default": "false",
+            "properties": {
+                "skip_DNA_modification_calling": {
+                    "type": "boolean"
+                }
+            }
+        },
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -36,7 +47,8 @@
                     "type": "string",
                     "format": "directory-path",
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
-                    "fa_icon": "fas fa-folder-open"
+                    "fa_icon": "fas fa-folder-open",
+                    "default": "./results"
                 },
                 "email": {
                     "type": "string",
@@ -235,7 +247,6 @@
             "properties": {
                 "jaffal_ref_dir": {
                     "type": "string",
-                    "default": "for_jaffal",
                     "description": "Specifies the reference directory for JAFFAL.",
                     "fa_icon": "fas fa-bezier-curve"
                 },
@@ -319,7 +330,7 @@
                     "type": "string",
                     "format": "directory-path",
                     "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes",
+                    "default": "s3://ngi-igenomes/igenomes/",
                     "fa_icon": "fas fa-cloud-download-alt",
                     "hidden": true
                 },
@@ -478,7 +489,7 @@
                 "tracedir": {
                     "type": "string",
                     "description": "Directory to keep pipeline Nextflow logs and reports.",
-                    "default": "${params.outdir}/pipeline_info",
+                    "default": "./results/pipeline_info",
                     "fa_icon": "fas fa-cogs",
                     "hidden": true
                 },
@@ -501,40 +512,49 @@
     },
     "allOf": [
         {
-            "$ref": "#/$defs/input_output_options"
+            "$ref": "#/definitions/dna_modification_analysis_option"
         },
         {
-            "$ref": "#/$defs/demultiplexing_options"
+            "$ref": "#/definitions/input_output_options"
         },
         {
-            "$ref": "#/$defs/alignment_options"
+            "$ref": "#/definitions/demultiplexing_options"
         },
         {
-            "$ref": "#/$defs/variant_calling_options"
+            "$ref": "#/definitions/alignment_options"
         },
         {
-            "$ref": "#/$defs/differential_analysis_options"
+            "$ref": "#/definitions/variant_calling_options"
         },
         {
-            "$ref": "#/$defs/rna_fusion_analysis_options"
+            "$ref": "#/definitions/differential_analysis_options"
         },
         {
-            "$ref": "#/$defs/rna_modification_analysis_options"
+            "$ref": "#/definitions/rna_fusion_analysis_options"
         },
         {
-            "$ref": "#/$defs/process_skipping_options"
+            "$ref": "#/definitions/rna_modification_analysis_options"
         },
         {
-            "$ref": "#/$defs/reference_genome_options"
+            "$ref": "#/definitions/process_skipping_options"
         },
         {
-            "$ref": "#/$defs/institutional_config_options"
+            "$ref": "#/definitions/reference_genome_options"
         },
         {
-            "$ref": "#/$defs/max_job_request_options"
+            "$ref": "#/definitions/institutional_config_options"
         },
         {
-            "$ref": "#/$defs/generic_options"
+            "$ref": "#/definitions/max_job_request_options"
+        },
+        {
+            "$ref": "#/definitions/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "schema_ignore_params": {
+            "type": "string",
+            "default": "genomes"
+        }
+    }
 }

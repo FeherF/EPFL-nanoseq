@@ -117,6 +117,7 @@ include { QCFASTQ_NANOPLOT_FASTQC          } from '../subworkflows/local/qcfastq
 include { ALIGN_GRAPHMAP2                  } from '../subworkflows/local/align_graphmap2'
 include { ALIGN_MINIMAP2                   } from '../subworkflows/local/align_minimap2'
 include { BAM_SORT_INDEX_SAMTOOLS          } from '../subworkflows/local/bam_sort_index_samtools'
+include { DNA_MODIFICATION_CALLING_MODKIT  } from '../subworkflows/local/dna_modification_calling_modkit'
 include { SHORT_VARIANT_CALLING            } from '../subworkflows/local/short_variant_calling'
 include { STRUCTURAL_VARIANT_CALLING       } from '../subworkflows/local/structural_variant_calling'
 include { BEDTOOLS_UCSC_BIGWIG             } from '../subworkflows/local/bedtools_ucsc_bigwig'
@@ -288,6 +289,18 @@ workflow NANOSEQ{
         ch_view_sortbam = BAM_SORT_INDEX_SAMTOOLS.out.sortbam
         ch_software_versions = ch_software_versions.mix(BAM_SORT_INDEX_SAMTOOLS.out.samtools_versions.first().ifEmpty(null))
         ch_samtools_multiqc  = BAM_SORT_INDEX_SAMTOOLS.out.sortbam_stats_multiqc.ifEmpty([])
+       
+        /*
+         * SUBWORKFLOW: DNA modification detection with modkit
+         */
+        if (!params.skip_DNA_modification_calling && params.protocol == 'DNA') {
+            ch_view_sortbam
+                .map { it -> [ it[0], it[3], it[4] ] } 
+                .set { ch_modkit_input } 
+            DNA_MODIFICATION_CALLING_MODKIT ( ch_modkit_input )
+            ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_CALLING_MODKIT.out.modkit_versions.first().ifEmpty(null))
+        }
+
 
         if (params.call_variants && params.protocol == 'DNA') {
             /*
