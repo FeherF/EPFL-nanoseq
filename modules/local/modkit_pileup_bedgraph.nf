@@ -1,5 +1,3 @@
-//modkit pileup ../nfcore/results/minimap2/sample_R1.sorted.bam bedgraphs --bedgraph
-
 process MODKIT_PILEUP_BEDGRAPH {
     tag "$meta.id"
     label 'process_medium'
