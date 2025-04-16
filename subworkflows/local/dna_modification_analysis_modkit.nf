@@ -1,11 +1,11 @@
 /*
- * DNA MODIFICATION DETECTION WITH MODKIT
+ * DNA MODIFICATION ANALYSIS WITH MODKIT
  */
 
 include { MODKIT_PILEUP } from '../../modules/local/modkit_pileup'
 include { MODKIT_PILEUP_BEDGRAPH } from '../../modules/local/modkit_pileup_bedgraph'
 
-workflow DNA_MODIFICATION_CALLING_MODKIT {
+workflow DNA_MODIFICATION_ANALYSIS_MODKIT {
     take:
     ch_view_sortbam
 
@@ -15,7 +15,8 @@ workflow DNA_MODIFICATION_CALLING_MODKIT {
     modkit_versions = Channel.empty()
 
     /*
-     * Call DNA modification with modkit
+     * Analyze DNA modifications with modkit
+     * This will produce a bed file with the modification calls
      */
     MODKIT_PILEUP( ch_view_sortbam )
     /*

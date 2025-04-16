@@ -25,6 +25,7 @@ process MINIMAP2_ALIGN {
     def md        = (params.call_variants && params.protocol == 'DNA') ? "--MD" : ""
     """
     minimap2 \\
+        -y \\
         $preset \\
         $kmer \\
         $stranded \\

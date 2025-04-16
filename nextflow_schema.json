@@ -5,14 +5,20 @@
     "description": "A pipeline to demultiplex, QC and map Nanopore data",
     "type": "object",
     "definitions": {
-        "dna_modification_analysis_option": {
-            "title": "DNA modification analysis option",
+        "basecalling_option": {
+            "title": "Basecalling with Dorado",
             "type": "object",
             "description": "",
             "default": "false",
             "properties": {
-                "skip_DNA_modification_calling": {
+                "skip_basecalling": {
                     "type": "boolean"
+                },
+                "dorado_model": {
+                    "type": "string"
+                },
+                "dorado_modification": {
+                    "type": "string"
                 }
             }
         },
@@ -512,7 +518,7 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/dna_modification_analysis_option"
+            "$ref": "#/definitions/basecalling_option"
         },
         {
             "$ref": "#/definitions/input_output_options"

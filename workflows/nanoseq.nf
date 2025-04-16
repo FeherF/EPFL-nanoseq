@@ -112,6 +112,7 @@ include { MULTIQC               } from '../modules/local/multiqc'
  */
 
 include { INPUT_CHECK                      } from '../subworkflows/local/input_check'
+include { BASECALL_DORADO                  } from '../subworkflows/local/basecall_dorado'
 include { PREPARE_GENOME                   } from '../subworkflows/local/prepare_genome'
 include { QCFASTQ_NANOPLOT_FASTQC          } from '../subworkflows/local/qcfastq_nanoplot_fastqc'
 include { ALIGN_GRAPHMAP2                  } from '../subworkflows/local/align_graphmap2'
@@ -180,34 +181,74 @@ workflow NANOSEQ{
      * Create empty software versions channel to mix
      */
     ch_software_versions = Channel.empty()
-
     /*
      * SUBWORKFLOW: Read in samplesheet, validate and stage input files
      */
     INPUT_CHECK ( ch_input, ch_input_path )
         .set { ch_sample }
 
-    if (!params.skip_demultiplexing) {
-
-        /*
-         * MODULE: Demultipexing using qcat
-         */
-        QCAT ( ch_input_path )
-        ch_fastq = Channel.empty()
-        QCAT.out.fastq
-            .flatten()
-            .map { it -> [ it, it.baseName.substring(0,it.baseName.lastIndexOf('.'))] }
-            .join(ch_sample, by: 1) // join on barcode
-            .map { it -> [ it[2], it[1], it[3], it[4], it[5], it[6] ] }
-            .set { ch_fastq }
-        ch_software_versions = ch_software_versions.mix(QCAT.out.versions.ifEmpty(null))
-    } else {
-        if (!params.skip_alignment) {
-            ch_sample
-                .map { it -> if (it[6].toString().endsWith('.gz')) [ it[0], it[6], it[2], it[1], it[4], it[5] ] }
-                .set { ch_fastq }
+    if (!params.skip_basecalling) {
+        // Get .pod5 files (from --input_path or sample sheet)
+        if (params.skip_demultiplexing) {
+            ch_pod5 = ch_sample.map { [ it[0], file(it[-2]) ] }
         } else {
-            ch_fastq = Channel.empty()
+            ch_pod5 = ch_input_path.map { 
+                def filePath = it.toString() 
+                def fileName = filePath.tokenize('/').last().replaceAll(/\.pod5$/, '') 
+                def meta = [ id: fileName ]
+                tuple(meta, file(filePath)) 
+            }
+        }
+
+        // Validate .pod5 files
+        ch_pod5 = ch_pod5.map { tuple ->
+            def pod5 = tuple[-1]
+            if (!pod5.name.endsWith('.pod5')) exit 1, "Input must be .pod5 if basecalling is enabled: $pod5"
+            if (!pod5.exists()) exit 1, "Missing file: $pod5"
+            return tuple
+        }
+
+        BASECALL_DORADO(ch_pod5)
+        ch_software_versions = BASECALL_DORADO.out.dorado_version.first().ifEmpty(null)
+        def ch_basecalled_fastq = BASECALL_DORADO.out.ch_basecalled_fastq
+
+        if (!params.skip_demultiplexing) {
+            ch_input_path = ch_basecalled_fastq.map { it[1] }
+            // TODO: test with real .pod5 non-demultiplexed from here
+            QCAT(ch_input_path)
+            ch_fastq = QCAT.out.fastq
+                .flatten()
+                .map { [ it, it.baseName.substring(0,it.baseName.lastIndexOf('.'))] }
+                .join(ch_sample, by: 1)
+                .map { it -> [ it[2], it[1], it[3], it[4], it[5], it[6] ] }
+            ch_software_versions = ch_software_versions.mix(QCAT.out.versions.ifEmpty(null))
+        } else {
+            // Replace input path with basecalled .fastq path
+            ch_sample = ch_sample
+                .map { row -> [ row[0], row ] }
+                .join(ch_basecalled_fastq, by: 0)
+                .map { [ it[1][0], it[1][1], it[1][2], it[1][3], it[1][4], it[1][5], it[2] ] }
+
+            if (!params.skip_alignment) {
+                ch_fastq = ch_sample.map { it -> it[6].toString().endsWith('.gz') ? [ it[0], it[6], it[2], it[1], it[4], it[5] ] : null }
+            } else {
+                ch_fastq = Channel.empty()
+            }
+        }
+    } else {
+        // basecalling is skipped
+        if (!params.skip_demultiplexing) {
+            QCAT(ch_input_path)
+            ch_fastq = QCAT.out.fastq
+                .flatten()
+                .map { [ it, it.baseName.substring(0,it.baseName.lastIndexOf('.'))] }
+                .join(ch_sample, by: 1)
+                .map { it -> [ it[2], it[1], it[3], it[4], it[5], it[6] ] }
+            ch_software_versions = ch_software_versions.mix(QCAT.out.versions.ifEmpty(null))
+        } else {
+            ch_fastq = !params.skip_alignment
+                ? ch_sample.map { it -> it[6].toString().endsWith('.gz') ? [ it[0], it[6], it[2], it[1], it[4], it[5] ] : null }
+                : Channel.empty()
         }
     }
 
@@ -291,9 +332,9 @@ workflow NANOSEQ{
         ch_samtools_multiqc  = BAM_SORT_INDEX_SAMTOOLS.out.sortbam_stats_multiqc.ifEmpty([])
        
         /*
-         * SUBWORKFLOW: DNA modification detection with modkit
+         * SUBWORKFLOW: DNA modification analysis with modkit
          */
-        if (!params.skip_DNA_modification_calling && params.protocol == 'DNA') {
+        if (!params.skip_basecalling && params.protocol == 'DNA') {
             ch_view_sortbam
                 .map { it -> [ it[0], it[3], it[4] ] } 
                 .set { ch_modkit_input } 
