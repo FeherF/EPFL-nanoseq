@@ -111,22 +111,22 @@ include { MULTIQC               } from '../modules/local/multiqc'
  * SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
  */
 
-include { INPUT_CHECK                      } from '../subworkflows/local/input_check'
-include { BASECALL_DORADO                  } from '../subworkflows/local/basecall_dorado'
-include { PREPARE_GENOME                   } from '../subworkflows/local/prepare_genome'
-include { QCFASTQ_NANOPLOT_FASTQC          } from '../subworkflows/local/qcfastq_nanoplot_fastqc'
-include { ALIGN_GRAPHMAP2                  } from '../subworkflows/local/align_graphmap2'
-include { ALIGN_MINIMAP2                   } from '../subworkflows/local/align_minimap2'
-include { BAM_SORT_INDEX_SAMTOOLS          } from '../subworkflows/local/bam_sort_index_samtools'
-include { DNA_MODIFICATION_ANALYSIS_MODKIT } from '../subworkflows/local/dna_modification_analysis_modkit'
-include { SHORT_VARIANT_CALLING            } from '../subworkflows/local/short_variant_calling'
-include { STRUCTURAL_VARIANT_CALLING       } from '../subworkflows/local/structural_variant_calling'
-include { BEDTOOLS_UCSC_BIGWIG             } from '../subworkflows/local/bedtools_ucsc_bigwig'
-include { BEDTOOLS_UCSC_BIGBED             } from '../subworkflows/local/bedtools_ucsc_bigbed'
-include { QUANTIFY_STRINGTIE_FEATURECOUNTS } from '../subworkflows/local/quantify_stringtie_featurecounts'
-include { DIFFERENTIAL_DESEQ2_DEXSEQ       } from '../subworkflows/local/differential_deseq2_dexseq'
-include { RNA_MODIFICATION_XPORE_M6ANET    } from '../subworkflows/local/rna_modifications_xpore_m6anet'
-include { RNA_FUSIONS_JAFFAL               } from '../subworkflows/local/rna_fusions_jaffal'
+include { INPUT_CHECK                                 } from '../subworkflows/local/input_check'
+include { BASECALL_DORADO                             } from '../subworkflows/local/basecall_dorado'
+include { PREPARE_GENOME                              } from '../subworkflows/local/prepare_genome'
+include { QCFASTQ_NANOPLOT_FASTQC                     } from '../subworkflows/local/qcfastq_nanoplot_fastqc'
+include { ALIGN_GRAPHMAP2                             } from '../subworkflows/local/align_graphmap2'
+include { ALIGN_MINIMAP2                              } from '../subworkflows/local/align_minimap2'
+include { BAM_SORT_INDEX_SAMTOOLS                     } from '../subworkflows/local/bam_sort_index_samtools'
+include { DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO } from '../subworkflows/local/dna_modification_analysis_modkit_methylasso'
+include { SHORT_VARIANT_CALLING                       } from '../subworkflows/local/short_variant_calling'
+include { STRUCTURAL_VARIANT_CALLING                  } from '../subworkflows/local/structural_variant_calling'
+include { BEDTOOLS_UCSC_BIGWIG                        } from '../subworkflows/local/bedtools_ucsc_bigwig'
+include { BEDTOOLS_UCSC_BIGBED                        } from '../subworkflows/local/bedtools_ucsc_bigbed'
+include { QUANTIFY_STRINGTIE_FEATURECOUNTS            } from '../subworkflows/local/quantify_stringtie_featurecounts'
+include { DIFFERENTIAL_DESEQ2_DEXSEQ                  } from '../subworkflows/local/differential_deseq2_dexseq'
+include { RNA_MODIFICATION_XPORE_M6ANET               } from '../subworkflows/local/rna_modifications_xpore_m6anet'
+include { RNA_FUSIONS_JAFFAL                          } from '../subworkflows/local/rna_fusions_jaffal'
 
 ////////////////////////////////////////////////////
 /* --    IMPORT NF-CORE MODULES/SUBWORKFLOWS   -- */
@@ -338,8 +338,8 @@ workflow NANOSEQ{
             ch_view_sortbam
                 .map { it -> [ it[0], it[3], it[4] ] } 
                 .set { ch_modkit_input } 
-            DNA_MODIFICATION_ANALYSIS_MODKIT ( ch_modkit_input )
-            ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT.out.modkit_versions.first().ifEmpty(null))
+            DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO ( ch_modkit_input )
+            ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO.out.modkit_versions.first().ifEmpty(null))
         }
 
 
