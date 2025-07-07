@@ -25,6 +25,8 @@ process SNIFFLES {
         -v ${meta.id}_sniffles.vcf \
         -t $task.cpus
 
+    sed -i '4i ##FILTER=<ID=STRANDBIAS,Description="Strand Bias">' ${meta.id}_sniffles.vcf
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sniffles: \$(sniffles --help 2>&1 | grep Version |sed 's/^.*Version: //')

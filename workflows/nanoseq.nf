@@ -69,7 +69,7 @@ if (params.call_variants) {
     if (params.protocol != 'DNA') {
         exit 1, "Invalid protocol option: ${params.protocol}. Valid options: 'DNA'"
     }
-    if (!params.skip_vc && params.variant_caller != 'medaka' && params.variant_caller != 'deepvariant' && params.variant_caller != 'pepper_margin_deepvariant') {
+    if (!params.skip_vc && params.variant_caller != 'medaka' && params.variant_caller != 'deepvariant' && params.variant_caller != 'pepper_margin_deepvariant' && params.variant_caller != 'clair3') {
         exit 1, "Invalid variant caller option: ${params.variant_caller}. Valid options: 'medaka', 'deepvariant' or 'pepper_margin_deepvariant'"
     }
     if (!params.skip_sv && params.structural_variant_caller != 'sniffles' && params.structural_variant_caller != 'cutesv') {
@@ -121,6 +121,7 @@ include { BAM_SORT_INDEX_SAMTOOLS                     } from '../subworkflows/lo
 include { DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO } from '../subworkflows/local/dna_modification_analysis_modkit_methylasso'
 include { SHORT_VARIANT_CALLING                       } from '../subworkflows/local/short_variant_calling'
 include { STRUCTURAL_VARIANT_CALLING                  } from '../subworkflows/local/structural_variant_calling'
+include { PHASE_WHATSHAP                              } from '../subworkflows/local/phase_whatshap'
 include { BEDTOOLS_UCSC_BIGWIG                        } from '../subworkflows/local/bedtools_ucsc_bigwig'
 include { BEDTOOLS_UCSC_BIGBED                        } from '../subworkflows/local/bedtools_ucsc_bigbed'
 include { QUANTIFY_STRINGTIE_FEATURECOUNTS            } from '../subworkflows/local/quantify_stringtie_featurecounts'
@@ -334,11 +335,12 @@ workflow NANOSEQ{
         /*
          * SUBWORKFLOW: DNA modification analysis with modkit
          */
+
         if (!params.skip_basecalling && params.protocol == 'DNA') {
             ch_view_sortbam
-                .map { it -> [ it[0], it[3], it[4] ] } 
+                .map { it -> [ it[0], it[3], it[4] ] } // meta.id, bam, bam index
                 .set { ch_modkit_input } 
-            DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO ( ch_modkit_input )
+            DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO ( ch_modkit_input, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }  )
             ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO.out.modkit_versions.first().ifEmpty(null))
         }
 
@@ -349,6 +351,7 @@ workflow NANOSEQ{
             */
             if (!params.skip_vc) {
                 SHORT_VARIANT_CALLING ( ch_view_sortbam, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] } )
+                ch_vcf = SHORT_VARIANT_CALLING.out.ch_short_calls_vcf
                 ch_software_versions = ch_software_versions.mix(SHORT_VARIANT_CALLING.out.ch_versions.first().ifEmpty(null))
             }
 
@@ -358,6 +361,27 @@ workflow NANOSEQ{
             if (!params.skip_sv) {
                 STRUCTURAL_VARIANT_CALLING ( ch_view_sortbam, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] } )
                 ch_software_versions = ch_software_versions.mix(STRUCTURAL_VARIANT_CALLING.out.ch_versions.first().ifEmpty(null))
+            }
+
+            /*
+            * SUBWORKFLOW: Phasing with WhatsHap
+            */
+            if (params.phase_whatshap && params.call_variants && !params.skip_vc) {
+                ch_view_sortbam_cleaned = ch_view_sortbam.map { it -> [ it[3], it[4] ] }
+                PHASE_WHATSHAP(ch_view_sortbam_cleaned, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }, ch_vcf)
+                ch_first_haplotype = PHASE_WHATSHAP.out.ch_first_haplotagged_bam
+                ch_second_haplotype = PHASE_WHATSHAP.out.ch_second_haplotagged_bam
+
+                ch_software_versions = ch_software_versions.mix(PHASE_WHATSHAP.out.ch_versions.first().ifEmpty(null))
+
+                /*
+                * Call haplotype-specific modifications with modkit
+                */
+                // ch_view_sortbam
+                // .map { it -> [ it[0], it[3], it[4] ] } // meta.id, bam, bam index
+                // .set { ch_modkit_input } 
+                // DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO ( ch_modkit_input, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }  )
+                // ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO.out.modkit_versions.first().ifEmpty(null))
             }
         }
 

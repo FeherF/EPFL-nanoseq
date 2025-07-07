@@ -9,9 +9,12 @@ process MODKIT_PILEUP {
 
     input:
     tuple val(meta), path(bam), path(index)
+    path(fasta)
+    path(fai)
 
     output:
     tuple val(meta), path("*_mc.bed"), emit: mc_calls
+    path("*.bedgraph")               , emit: mc_bedgraph
     path "versions.yml"              , emit: versions
 
     when:
@@ -21,9 +24,18 @@ process MODKIT_PILEUP {
     """
     modkit pileup \\
     ${bam} \\
-    ${meta.id}_mc.bed
+    ${meta.id}_mc.bed \\
+    --ref ${fasta} \\
+    --preset traditional \\
 
+    modkit pileup \\
+    ${bam} \\
+    . \\
+    --bedgraph \\
+    --ref ${fasta} \\
+    --preset traditional
 
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         modkit: \$(modkit -V | sed 's/^[^ ]* //')

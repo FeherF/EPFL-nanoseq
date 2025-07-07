@@ -208,6 +208,11 @@
                     "fa_icon": "fas fa-exchange-alt",
                     "description": "Specifies if vcf will be phased when using medaka."
                 },
+                "phase_whatshap": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-exchange-alt",
+                    "description": "Specifies if vcf will be phased using whatshap, after variant calling."
+                },
                 "skip_vc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-fast-forward",

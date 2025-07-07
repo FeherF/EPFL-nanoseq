@@ -1,9 +1,8 @@
-//TODO: check if we can use GPU
 process DORADO_BASECALL {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
-    container "docker.io/ontresearch/dorado"
+    container 'docker.io/ff1997/dorado-pigz:latest'
 
     input:
     tuple val(meta), path(pod5_path)
@@ -19,10 +18,10 @@ process DORADO_BASECALL {
 
     """
     dorado basecaller $dorado_model $pod5_path $emit_args
-
+    
     ${params.dorado_modification ? """
     samtools fastq -T MM,ML -@ $task.cpus ${meta.id}.bc.bam > ${meta.id}.bc.fastq
-    gzip ${meta.id}.bc.fastq
+    pigz -p${task.cpus} ${meta.id}.bc.fastq
     rm ${meta.id}.bc.bam
     """ : ""}
 
