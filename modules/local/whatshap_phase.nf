@@ -23,25 +23,6 @@ process WHATSHAP_PHASE {
     source /opt/conda/etc/profile.d/conda.sh
     conda activate bioenv
 
-<<<<<<< HEAD
-    bcftools view -f PASS $vcf -Oz -o pass.vcf.gz
-
-    if samtools view -H $bam | grep -q '^@RG'; then
-        whatshap phase \\
-          -o ${meta.id}_phased.vcf \\
-          --reference=$fasta \\
-          pass.vcf.gz \\
-          $bam
-
-        bgzip -c ${meta.id}_phased.vcf > ${meta.id}_phased.vcf.gz
-        tabix -p vcf ${meta.id}_phased.vcf.gz
-
-        whatshap haplotag \\
-          -o ${meta.id}_haplotagged.bam \\
-          --reference $fasta \\
-          --output-haplotag-list ${meta.id}_haplotag_list.tsv \\
-          ${meta.id}_phased.vcf.gz \\
-=======
     if samtools view -H $bam | grep -q '^@RG'; then
         whatshap phase \\
           -o ${meta.id}.phased.whatshap.vcf \\
@@ -58,27 +39,10 @@ process WHATSHAP_PHASE {
           --reference $fasta \\
           --output-haplotag-list ${meta.id}.haplotag.list.whatshap.tsv \\
           ${meta.id}.phased.whatshap.vcf.gz \\
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
           $bam
     else
         whatshap phase \\
           --ignore-read-groups \\
-<<<<<<< HEAD
-          -o ${meta.id}_phased.vcf \\
-          --reference=$fasta \\
-          pass.vcf.gz \\
-          $bam
-        
-        bgzip -c ${meta.id}_phased.vcf > ${meta.id}_phased.vcf.gz
-        tabix -p vcf ${meta.id}_phased.vcf.gz
-
-        whatshap haplotag \\
-          --ignore-read-groups \\
-          -o ${meta.id}_haplotagged.bam \\
-          --reference $fasta \\
-          --output-haplotag-list ${meta.id}_haplotag_list.tsv \\
-          ${meta.id}_phased.vcf.gz \\
-=======
           -o ${meta.id}.phased.whatshap.vcf \\
           --reference=$fasta \\
           $vcf \\
@@ -94,23 +58,15 @@ process WHATSHAP_PHASE {
           --reference $fasta \\
           --output-haplotag-list ${meta.id}.haplotag.list.whatshap.tsv \\
           ${meta.id}.phased.whatshap.vcf.gz \\
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
           $bam
     fi
 
 
     whatshap split \\
-<<<<<<< HEAD
-      --output-h1 ${meta.id}_h1.bam \\
-      --output-h2 ${meta.id}_h2.bam \\
-      $bam \\
-      ${meta.id}_haplotag_list.tsv
-=======
       --output-h1 ${meta.id}.h1.whatshap.bam \\
       --output-h2 ${meta.id}.h2.whatshap.bam \\
       $bam \\
       ${meta.id}.haplotag.list.whatshap.tsv
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

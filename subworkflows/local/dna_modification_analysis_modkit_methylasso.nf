@@ -31,12 +31,6 @@ workflow DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO {
 
     emit:
     ch_mc_bed
-<<<<<<< HEAD
-    ch_mc_bedgraph
-    ch_methylasso_tsv
-    ch_methylasso_pdf
-=======
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
     modkit_versions
     methylasso_versions
 }

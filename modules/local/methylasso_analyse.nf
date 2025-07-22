@@ -1,7 +1,7 @@
 process METHYLASSO_ANALYSE {
     tag "$meta.id"
     label 'process_long'
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
     container 'docker.io/ff1997/methylasso:latest'
 
     input:
@@ -65,59 +65,3 @@ process METHYLASSO_ANALYSE {
 
 
 }
-
-<<<<<<< HEAD
-
-
-//   script:
-//     """
-//     INPUT_DIR="input"
-//     mkdir -p "\$INPUT_DIR"
-//     awk -v outdir="\$INPUT_DIR" '
-//     BEGIN {
-//         FS = OFS = "\t";
-//     }
-//     {
-//         chr = \$1;
-//         mod = \$4;
-//         strand = \$6;
-//         perc = \$11 / 100;
-
-//         if (chr !~ /^chr([1-9]|1[0-9]|2[0-2]|X|Y|M)\$/) next;
-//         if (chr ~ /(random|chrUn)/) next;
-
-//         strand_name = (strand == "+") ? "pos" : "neg";
-//         filename = outdir "/methylasso_input_" mod "_" strand_name ".bed";
-//         print \$1, \$2, \$3, \$10, perc >> filename;
-//         counts[filename]++;
-//     }
-//     ' "${methyl_bed}"
-
-//     source /opt/conda/etc/profile.d/conda.sh
-//     conda activate MethyLasso
-
-//     run_methylasso_or_warn() {
-//         local mod="\$1"
-//         local strand="\$2"
-//         local infile="input/methylasso_input_\${mod}_\${strand}.bed"
-//         local outfile="\${mod}_\${strand}"
-
-//         if [ -s "\$infile" ] && [ \$(wc -l < "\$infile") -ge 50000 ]; then
-//             Rscript /opt/methylasso/MethyLasso.R --n1 healthy --c1 "\$infile" --cov 4 --meth 5 -t 20 -o "\$outfile"
-//         else
-//             echo "Sample \${mod}_\${strand} has too few rows for MethyLasso (<50000). Skipping analysis." > "\${outfile}.txt"
-//         fi
-//     }
-
-//     run_methylasso_or_warn h pos
-//     run_methylasso_or_warn h neg
-//     run_methylasso_or_warn m pos
-//     run_methylasso_or_warn m neg
-
-//     cat <<-END_VERSIONS > versions.yml
-//     "${task.process}":
-//     methylasso: \$(Rscript /opt/methylasso/MethyLasso.R --version | grep 'MethyLasso version' | cut -d' ' -f3)
-//     END_VERSIONS
-//     """
-=======
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)

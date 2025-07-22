@@ -13,11 +13,7 @@ process MODKIT_PILEUP {
     path(fai)
 
     output:
-<<<<<<< HEAD
-    tuple val(meta), path("*_mc.bed"), emit: mc_calls
-=======
     tuple val(meta), path("*.bed"), emit: mc_calls
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
     path("*.bedgraph")               , emit: mc_bedgraph
     path "versions.yml"              , emit: versions
 
@@ -40,7 +36,6 @@ process MODKIT_PILEUP {
     --ref ${fasta} \\
     --preset traditional \\
     --threads ${task.cpus}
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
 
     
     cat <<-END_VERSIONS > versions.yml

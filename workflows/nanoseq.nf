@@ -108,25 +108,6 @@ include { MULTIQC               } from '../modules/local/multiqc'
  * SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
  */
 
-<<<<<<< HEAD
-include { INPUT_CHECK                                 } from '../subworkflows/local/input_check'
-include { BASECALL_DORADO                             } from '../subworkflows/local/basecall_dorado'
-include { PREPARE_GENOME                              } from '../subworkflows/local/prepare_genome'
-include { QCFASTQ_NANOPLOT_FASTQC                     } from '../subworkflows/local/qcfastq_nanoplot_fastqc'
-include { ALIGN_GRAPHMAP2                             } from '../subworkflows/local/align_graphmap2'
-include { ALIGN_MINIMAP2                              } from '../subworkflows/local/align_minimap2'
-include { BAM_SORT_INDEX_SAMTOOLS                     } from '../subworkflows/local/bam_sort_index_samtools'
-include { DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO } from '../subworkflows/local/dna_modification_analysis_modkit_methylasso'
-include { SHORT_VARIANT_CALLING                       } from '../subworkflows/local/short_variant_calling'
-include { STRUCTURAL_VARIANT_CALLING                  } from '../subworkflows/local/structural_variant_calling'
-include { PHASE_WHATSHAP                              } from '../subworkflows/local/phase_whatshap'
-include { BEDTOOLS_UCSC_BIGWIG                        } from '../subworkflows/local/bedtools_ucsc_bigwig'
-include { BEDTOOLS_UCSC_BIGBED                        } from '../subworkflows/local/bedtools_ucsc_bigbed'
-include { QUANTIFY_STRINGTIE_FEATURECOUNTS            } from '../subworkflows/local/quantify_stringtie_featurecounts'
-include { DIFFERENTIAL_DESEQ2_DEXSEQ                  } from '../subworkflows/local/differential_deseq2_dexseq'
-include { RNA_MODIFICATION_XPORE_M6ANET               } from '../subworkflows/local/rna_modifications_xpore_m6anet'
-include { RNA_FUSIONS_JAFFAL                          } from '../subworkflows/local/rna_fusions_jaffal'
-=======
 include { INPUT_CHECK                                               } from '../subworkflows/local/input_check'
 include { BASECALL_DORADO                                           } from '../subworkflows/local/basecall_dorado'
 include { PREPARE_GENOME                                            } from '../subworkflows/local/prepare_genome'
@@ -147,7 +128,6 @@ include { QUANTIFY_STRINGTIE_FEATURECOUNTS                          } from '../s
 include { DIFFERENTIAL_DESEQ2_DEXSEQ                                } from '../subworkflows/local/differential_deseq2_dexseq'
 include { RNA_MODIFICATION_XPORE_M6ANET                             } from '../subworkflows/local/rna_modifications_xpore_m6anet'
 include { RNA_FUSIONS_JAFFAL                                        } from '../subworkflows/local/rna_fusions_jaffal'
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
 
 ////////////////////////////////////////////////////
 /* --    IMPORT NF-CORE MODULES/SUBWORKFLOWS   -- */
@@ -378,9 +358,6 @@ workflow NANOSEQ{
             * SUBWORKFLOW: Short variant calling
             */
             if (!params.skip_vc) {
-<<<<<<< HEAD
-                SHORT_VARIANT_CALLING ( ch_view_sortbam, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] } )
-=======
                 def ch_clair3_model
 
                 if (!params.skip_basecalling) {
@@ -398,7 +375,6 @@ workflow NANOSEQ{
                     ch_clair3_model = params.clair_model
                 }
                 SHORT_VARIANT_CALLING ( ch_view_sortbam, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }, ch_clair3_model )
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
                 ch_vcf = SHORT_VARIANT_CALLING.out.ch_short_calls_vcf
                 ch_software_versions = ch_software_versions.mix(SHORT_VARIANT_CALLING.out.ch_versions.first().ifEmpty(null))
             }
@@ -412,8 +388,6 @@ workflow NANOSEQ{
                 ch_software_versions = ch_software_versions.mix(STRUCTURAL_VARIANT_CALLING.out.ch_versions.first().ifEmpty(null))
             }
 
-<<<<<<< HEAD
-=======
 
             /*
             * SUBWORKFLOW: Annotate variants with vcf2maf
@@ -426,40 +400,24 @@ workflow NANOSEQ{
             }
 
 
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
             /*
             * SUBWORKFLOW: Phasing with WhatsHap
             */
             if (params.phase_whatshap && params.call_variants && !params.skip_vc) {
                 ch_view_sortbam_cleaned = ch_view_sortbam.map { it -> [ it[3], it[4] ] }
-<<<<<<< HEAD
-                PHASE_WHATSHAP(ch_view_sortbam_cleaned, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }, ch_vcf)
-                ch_first_haplotype = PHASE_WHATSHAP.out.ch_first_haplotagged_bam
-                ch_second_haplotype = PHASE_WHATSHAP.out.ch_second_haplotagged_bam
-
-=======
                 PHASE_WHATSHAP( ch_view_sortbam_cleaned, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }, ch_vcf )
                 ch_first_haplotype = PHASE_WHATSHAP.out.ch_first_haplotagged_bam
                 ch_second_haplotype = PHASE_WHATSHAP.out.ch_second_haplotagged_bam
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
                 ch_software_versions = ch_software_versions.mix(PHASE_WHATSHAP.out.ch_versions.first().ifEmpty(null))
 
                 /*
                 * Call haplotype-specific modifications with modkit
                 */
-<<<<<<< HEAD
-                // ch_view_sortbam
-                // .map { it -> [ it[0], it[3], it[4] ] } // meta.id, bam, bam index
-                // .set { ch_modkit_input } 
-                // DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO ( ch_modkit_input, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }  )
-                // ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO.out.modkit_versions.first().ifEmpty(null))
-=======
                 // Extract meta from ch_view_sortbam
                 ch_meta = ch_view_sortbam.map{ it [0] }
 
                 DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED ( ch_meta, ch_first_haplotype, ch_second_haplotype, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }  )
                 ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED.out.modkit_versions.first().ifEmpty(null))
->>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
             }
         }
 
