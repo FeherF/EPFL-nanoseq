@@ -212,10 +212,19 @@ def check_samplesheet(file_in, updated_path, file_out):
                     print_error("Replicate ids must start with 1..<num_replicates>!", "Group", sample)
 
                 ### Write to file
-                for replicate in sorted(sample_info_dict[sample].keys()):
-                    sample_id = "{}_R{}".format(sample, replicate)
-                    fout.write(",".join([sample_id] + sample_info_dict[sample][replicate]) + "\n")
-
+                # for replicate in sorted(sample_info_dict[sample].keys()):
+                #     sample_id = "{}_R{}".format(sample, replicate)
+                #     fout.write(",".join([sample_id] + sample_info_dict[sample][replicate]) + "\n")
+                
+                # If there is only one replicate, use the sample name as the sample id
+                replicates = sample_info_dict[sample]
+                for replicate in sorted(replicates.keys()):
+                    if len(replicates) == 1:
+                        sample_id = sample
+                    else:
+                        sample_id = "{}_R{}".format(sample, replicate)
+                    fout.write(",".join([sample_id] + replicates[replicate]) + "\n")
+ 
 
 def main(args=None):
     args = parse_args(args)

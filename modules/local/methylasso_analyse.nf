@@ -1,8 +1,7 @@
-// TODO: Still need to publish folder correctly and ordered, and test with big dataset, with small dataset is not publishing correctly
 process METHYLASSO_ANALYSE {
     tag "$meta.id"
     label 'process_long'
-
+    errorStrategy 'ignore'
     container 'docker.io/ff1997/methylasso:latest'
 
     input:
@@ -67,6 +66,7 @@ process METHYLASSO_ANALYSE {
 
 }
 
+<<<<<<< HEAD
 
 
 //   script:
@@ -119,3 +119,5 @@ process METHYLASSO_ANALYSE {
 //     methylasso: \$(Rscript /opt/methylasso/MethyLasso.R --version | grep 'MethyLasso version' | cut -d' ' -f3)
 //     END_VERSIONS
 //     """
+=======
+>>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)

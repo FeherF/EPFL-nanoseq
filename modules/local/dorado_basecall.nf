@@ -9,6 +9,7 @@ process DORADO_BASECALL {
 
     output:
     tuple val(meta), path("*bc.fastq.gz")  , emit: dorado_out
+    path("model.txt")                      , emit: model
     path "versions.yml"                    , emit: versions
 
     script:
@@ -17,8 +18,23 @@ process DORADO_BASECALL {
     def dorado_model = (params.dorado_model == null) ? "hac" : params.dorado_model
 
     """
-    dorado basecaller $dorado_model $pod5_path $emit_args
-    
+    dorado basecaller $dorado_model $pod5_path $emit_args 2> execution.log
+
+    model_line=\$(grep -oP 'downloading\\s+\\Kdna_[^ ]+' execution.log | head -n1 || true)
+
+    if [[ -n "\$model_line" ]]; then
+        clair3_model=\$(echo "\$model_line" \\
+            | sed -E 's/^dna_//' \\
+            | sed -E 's/r/r/' \\
+            | sed -E 's/\\./_/g' \\
+            | sed -E 's/@v([0-9]+)\\.([0-9]+)/_v\\1\\2/' \\
+        )_model
+    else
+        clair3_model="NA"
+    fi
+
+    echo "\$model_line" > model.txt
+
     ${params.dorado_modification ? """
     samtools fastq -T MM,ML -@ $task.cpus ${meta.id}.bc.bam > ${meta.id}.bc.fastq
     pigz -p${task.cpus} ${meta.id}.bc.fastq

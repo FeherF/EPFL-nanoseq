@@ -7,7 +7,8 @@ include { TABIX_BGZIP as MEDAKA_BGZIP_VCF       } from '../../modules/nf-core/ta
 include { TABIX_TABIX as MEDAKA_TABIX_VCF       } from '../../modules/nf-core/tabix/tabix/main'
 include { DEEPVARIANT                           } from '../../modules/local/deepvariant'
 include { TABIX_TABIX as DEEPVARIANT_TABIX_VCF  } from '../../modules/nf-core/tabix/tabix/main'
-include { TABIX_TABIX as DEEPVARIANT_TABIX_GVCF } from '../../modules/nf-core/tabix/tabix/main'
+include { TABIX_TABIX as CLAIR3_TABIX           } from '../../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_VIEW as CLAIR3_FILTER        } from '../../modules/nf-core/bcftools/view/main'
 include { PEPPER_MARGIN_DEEPVARIANT             } from '../../modules/local/pepper_margin_deepvariant'
 include { CLAIR3                                } from '../../modules/local/clair3'
 
@@ -18,6 +19,7 @@ workflow SHORT_VARIANT_CALLING {
     ch_view_sortbam
     ch_fasta
     ch_fai
+    ch_clair3_model
 
     main:
     ch_short_calls_vcf              = Channel.empty()
@@ -80,9 +82,21 @@ workflow SHORT_VARIANT_CALLING {
         /*
          * Call variants with clair3 (automatic zip + index)
          */
-        CLAIR3( ch_view_sortbam, ch_fasta, ch_fai )
-        ch_short_calls_vcf = CLAIR3.out.vcf
-        ch_short_calls_vcf_tbi = CLAIR3.out.tbi
+
+        CLAIR3(ch_view_sortbam, ch_fasta, ch_fai, ch_clair3_model)
+
+        def ch_clair3_filter_input = CLAIR3.out.vcf.map { meta, file ->
+            def filename = file.getName().replaceFirst(/(\.[^.]+){2}$/, '')
+            def newMeta = meta + [prefix: filename]
+            tuple(newMeta, file)
+        }
+        CLAIR3_FILTER(ch_clair3_filter_input)
+        
+        def ch_clair3_tabix_input = CLAIR3_FILTER.out.vcf
+        CLAIR3_TABIX( ch_clair3_tabix_input )
+        
+        ch_short_calls_vcf = CLAIR3_FILTER.out.vcf
+        ch_short_calls_vcf_tbi = CLAIR3_TABIX.out.tbi
         ch_versions = ch_versions.mix(CLAIR3.out.versions)
 
     } else {

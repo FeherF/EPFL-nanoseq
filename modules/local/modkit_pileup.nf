@@ -1,8 +1,8 @@
 process MODKIT_PILEUP {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
-    conda "bioconda::modkit=0.4.3"
+    conda "bioconda::ont-modkit=0.5.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ont-modkit:0.4.3--hcdda2d0_0' :
         'quay.io/biocontainers/ont-modkit:0.4.3--hcdda2d0_0' }"
@@ -13,7 +13,11 @@ process MODKIT_PILEUP {
     path(fai)
 
     output:
+<<<<<<< HEAD
     tuple val(meta), path("*_mc.bed"), emit: mc_calls
+=======
+    tuple val(meta), path("*.bed"), emit: mc_calls
+>>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
     path("*.bedgraph")               , emit: mc_bedgraph
     path "versions.yml"              , emit: versions
 
@@ -24,16 +28,19 @@ process MODKIT_PILEUP {
     """
     modkit pileup \\
     ${bam} \\
-    ${meta.id}_mc.bed \\
+    ${meta.id}.cpg.5mc.modkit.bed \\
     --ref ${fasta} \\
     --preset traditional \\
+    --threads ${task.cpus}
 
     modkit pileup \\
     ${bam} \\
-    . \\
+    ./${meta.id}.cpg.5mc.modkit.bedgraph \\
     --bedgraph \\
     --ref ${fasta} \\
-    --preset traditional
+    --preset traditional \\
+    --threads ${task.cpus}
+>>>>>>> 25c8a15 (add methylasso haplotagged, add vcf2maf, fix naming)
 
     
     cat <<-END_VERSIONS > versions.yml

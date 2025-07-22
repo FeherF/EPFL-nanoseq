@@ -183,8 +183,14 @@
                 },
                 "variant_caller": {
                     "type": "string",
-                    "default": "medaka",
+                    "default": "clair3",
                     "description": "Specifies the variant caller that will used to call small variants (available are: medaka, deepvariant, and pepper_margin_deepvariant). Variant calling is only available if '--call_variants' is set and the protocol is set to `DNA`. Please note `deepvariant` and `pepper_margin_deepvariant` are only avaible if using singularity or docker.",
+                    "fa_icon": "fas fa-bezier-curve"
+                },
+                "clair_model": {
+                    "type": "string",
+                    "default": "dorado_model",
+                    "description": "Specifies the model to use for variant calling with clair3 (check available models at https://github.com/nanoporetech/rerio/blob/master/clair3_models/). Example: r1041_e82_400bps_sup_v410.",
                     "fa_icon": "fas fa-bezier-curve"
                 },
                 "structural_variant_caller": {

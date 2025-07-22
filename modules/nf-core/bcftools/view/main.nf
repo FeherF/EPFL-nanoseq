@@ -1,4 +1,4 @@
-process BCFTOOLS_SORT {
+process BCFTOOLS_VIEW {
     tag "$meta.id"
     label 'process_medium'
 
@@ -11,7 +11,7 @@ process BCFTOOLS_SORT {
     tuple val(meta), path(vcf)
 
     output:
-    tuple val(meta), path("*.gz"), emit: vcf
+    tuple val(meta), path("*.gz") , emit: vcf
     path "versions.yml"           , emit: versions
 
     when:
@@ -19,13 +19,15 @@ process BCFTOOLS_SORT {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = meta.prefix ?: "${meta.id}"
+    
     """
     bcftools \\
-        sort \\
-        --output ${prefix}.vcf.gz \\
-        $args \\
-        $vcf
+        view \\
+        -f PASS \\
+        $vcf \\
+        -Oz -o ${prefix}.pass.vcf.gz
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

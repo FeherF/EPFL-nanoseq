@@ -10,6 +10,7 @@ workflow BASECALL_DORADO {
 
     main:
     ch_basecalled_fastq = Channel.empty()
+    ch_used_model = Channel.empty()
     dorado_version = Channel.empty()
 
     /*
@@ -19,9 +20,11 @@ workflow BASECALL_DORADO {
     DORADO_BASECALL( ch_pod5 ) 
 
     ch_basecalled_fastq = DORADO_BASECALL.out.dorado_out
+    ch_used_model = DORADO_BASECALL.out.model
     dorado_version = DORADO_BASECALL.out.versions
 
     emit:
     ch_basecalled_fastq
+    ch_used_model
     dorado_version
 }

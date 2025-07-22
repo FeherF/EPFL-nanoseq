@@ -34,7 +34,7 @@ process MINIMAP2_ALIGN {
         -t $task.cpus \\
         $index \\
         $fastq > ${meta.id}.sam
-
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         minimap2: \$(minimap2 --version 2>&1)
