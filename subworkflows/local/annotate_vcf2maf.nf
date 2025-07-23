@@ -20,7 +20,6 @@ workflow ANNOTATE_VCF2MAF {
      */
     VCF2MAF( ch_vcf, ch_fasta, ch_fai, ch_vep_data ) 
 
-
     ch_annotated_maf = VCF2MAF.out.annotated_maf
     ch_versions = VCF2MAF.out.versions
 

@@ -13,9 +13,9 @@ process MODKIT_PILEUP {
     path(fai)
 
     output:
-    tuple val(meta), path("*.bed"), emit: mc_calls
-    path("*.bedgraph")               , emit: mc_bedgraph
-    path "versions.yml"              , emit: versions
+    tuple val(meta), path("*modkit.bed")      , emit: mc_calls
+    path("*.modkit.bedgraph")                  , emit: mc_bedgraph
+    path "versions.yml"                 , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

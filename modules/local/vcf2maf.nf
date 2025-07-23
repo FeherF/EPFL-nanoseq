@@ -10,8 +10,8 @@ process VCF2MAF {
     path(vep_data)
 
     output:
-    path("*.vcf2maf.maf"), emit: annotated_maf
-    path "versions.yml"                  , emit: versions
+    path("*.vcf2maf.maf")     , emit: annotated_maf
+    path "versions.yml"       , emit: versions
 
     script:
     """

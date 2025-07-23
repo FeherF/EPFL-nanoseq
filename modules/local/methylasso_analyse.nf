@@ -1,7 +1,7 @@
 process METHYLASSO_ANALYSE {
     tag "$meta.id"
     label 'process_long'
-    //errorStrategy 'ignore'
+    errorStrategy 'ignore'
     container 'docker.io/ff1997/methylasso:latest'
 
     input:

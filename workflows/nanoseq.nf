@@ -215,7 +215,6 @@ workflow NANOSEQ{
 
         if (!params.skip_demultiplexing) {
             ch_input_path = ch_basecalled_fastq.map { it[1] }
-            // TODO: test with real .pod5 non-demultiplexed from here
             QCAT(ch_input_path)
             ch_fastq = QCAT.out.fastq
                 .flatten()
@@ -236,6 +235,9 @@ workflow NANOSEQ{
                 ch_fastq = Channel.empty()
             }
         }
+
+        if (params.only_basecalling) { return } // Exit workflow if only basecalling is requested
+        
     } else {
         // basecalling is skipped
         if (!params.skip_demultiplexing) {

@@ -1,4 +1,3 @@
-//TODO: we can have multiple read groups in the bam file, here we assume only one read group is present and we use --ingore-read-groups
 process WHATSHAP_PHASE {
     tag "$meta.id"
     label 'process_high'
@@ -11,12 +10,12 @@ process WHATSHAP_PHASE {
     tuple val(meta), path(vcf)
     
     output:
-    path("*.whatshap.vcf")                 , emit: phased_vcf
-    path("*.tsv"), optional:true                 , emit: haplotag_list
-    path("*.h1.whatshap.bam")                 , emit: first_haplotagged_bam
-    path("*.h2.whatshap.bam")                 , emit: second_haplotagged_bam
-    path("*.haplotagged.whatshap.bam"), emit: haplotagged_bam
-    path "versions.yml"                  , emit: versions
+    path("*.whatshap.vcf")                   , emit: phased_vcf
+    path("*.tsv"), optional:true             , emit: haplotag_list
+    path("*.h1.whatshap.bam")                , emit: first_haplotagged_bam
+    path("*.h2.whatshap.bam")                , emit: second_haplotagged_bam
+    path("*.haplotagged.whatshap.bam")       , emit: haplotagged_bam
+    path "versions.yml"                      , emit: versions
 
     script:
     """
@@ -63,10 +62,10 @@ process WHATSHAP_PHASE {
 
 
     whatshap split \\
-      --output-h1 ${meta.id}.h1.whatshap.bam \\
-      --output-h2 ${meta.id}.h2.whatshap.bam \\
-      $bam \\
-      ${meta.id}.haplotag.list.whatshap.tsv
+    --output-h1 ${meta.id}.h1.whatshap.bam \\
+    --output-h2 ${meta.id}.h2.whatshap.bam \\
+    $bam \\
+    ${meta.id}.haplotag.list.whatshap.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

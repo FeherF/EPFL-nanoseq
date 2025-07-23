@@ -12,9 +12,9 @@ process MODKIT_PILEUP_HAPLOTAGGED {
     path(fai)
 
     output:
-    tuple val(meta), path("*.modkit.bed"), emit: mc_calls
+    tuple val(meta), path("*.modkit.bed")   , emit: mc_calls
     path("*.modkit.bedgraph")               , emit: mc_bedgraph
-    path "versions.yml"              , emit: versions
+    path "versions.yml"                     , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

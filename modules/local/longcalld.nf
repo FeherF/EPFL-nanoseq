@@ -20,7 +20,6 @@ process LONGCALLD {
     longcallD call -t${task.cpus} ${fasta} ${input} --ont > ${meta.id}.longcallD.vcf
     
     cat ${meta.id}.longcallD.vcf | grep -E '^#|SVTYPE' > ${meta.id}.longcallD.svtype.vcf
-
     rm ${meta.id}.longcallD.vcf
     mv ${meta.id}.longcallD.svtype.vcf ${meta.id}.longcallD.vcf
 

@@ -15,12 +15,14 @@ workflow DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO {
     ch_mc_bed = Channel.empty()
     modkit_versions = Channel.empty()
     methylasso_versions = Channel.empty()
+    
     /*
      * Analyze DNA modifications with modkit
      * This will produce a bed file with the modification calls
      */
     MODKIT_PILEUP( ch_view_sortbam, ch_fasta, ch_fai )
     mc_bed = MODKIT_PILEUP.out.mc_calls
+    
     /*
      * Run methylasso
      */

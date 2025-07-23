@@ -11,6 +11,9 @@
             "description": "",
             "default": "false",
             "properties": {
+                "only_basecalling": {
+                    "type": "boolean"
+                },
                 "skip_basecalling": {
                     "type": "boolean"
                 },
