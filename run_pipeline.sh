@@ -109,13 +109,18 @@ if $GPU_PRESENT; then
         echo "❌ Sync failed."
         exit 3
     fi
-
+    
     echo "Connecting to remote host to clone and prepare EPFL-nanoseq repo..."
-    ssh ${REMOTE_USER}@${REMOTE_HOST} <<EOF
+    ssh ${REMOTE_USER}@${REMOTE_HOST} bash -lc "
         set -e  # exit on failure
-
+        source ~/.bashrc
+        source ~/.profile
+        export SDKMAN_DIR=\"\$HOME/.sdkman\"
+        [[ -s \"\$SDKMAN_DIR/bin/sdkman-init.sh\" ]] && source \"\$SDKMAN_DIR/bin/sdkman-init.sh\"
+        export JAVA_HOME=\"\$SDKMAN_DIR/candidates/java/current\"
+        export PATH=\"\$JAVA_HOME/bin:\$PATH\"
+        
         cd ~/${REMOTE_DEST_DIR}
-
         # If the repo doesn't exist yet, clone it
         if [ ! -d "EPFL-nanoseq" ]; then
             echo "Cloning EPFL-nanoseq repository..."
@@ -125,6 +130,17 @@ if $GPU_PRESENT; then
         fi
 
         cd EPFL-nanoseq
-        echo "✅ Remote is now inside ~/${REMOTE_DEST_DIR}/EPFL-nanoseq"
-EOF
+        echo "Pulling latest changes from dev branch..."
+        git checkout dev
+        git pull origin dev
+
+        echo "Running ./run_pipeline.sh..."
+        tmux new-session -d -s nextflow_pipeline_session \"bash -c './run_pipeline.sh; echo \\\"Pipeline finished. Press ENTER ...\\\"; read -r; exec bash'\"
+
+        echo 'Nextflow pipeline started inside tmux session \"nextflow_pipeline_session\". You can attach with:'
+        echo '  tmux attach-session -t nextflow_pipeline_session' 
+
+
+
+    "
 fi
