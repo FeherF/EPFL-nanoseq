@@ -219,6 +219,16 @@
                     "fa_icon": "fas fa-exchange-alt",
                     "description": "Specifies if vcf will be phased using whatshap, after variant calling."
                 },
+                "annotate_vcf": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-exchange-alt",
+                    "description": "Specifies if vcf will be annotated using vcf2maf, after variant calling."
+                },
+                "vep_data_path": {
+                    "type": "string",
+                    "fa_icon": "fas fa-exchange-alt",
+                    "description": "Specifies the path of the vep data directory. If not specified, the default path will be used '/data/bin/vep/'."
+                },
                 "skip_vc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-fast-forward",

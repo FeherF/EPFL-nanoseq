@@ -51,7 +51,9 @@ process METHYLASSO_ANALYSE_HAPLOTAGGED {
                 [ -e "\$f" ] || continue
                 ext="\${f##*.}"
                 base="\${f%.*}"
-                mv "\$f" "\${base}.\${hap}.\${ext}"
+                if [[ "\$base" != *".h1" && "\$base" != *".h2" ]]; then
+                    mv "\$f" "\${base}.\${hap}.\${ext}"
+                fi
             done
         else
             echo "Sample \${hap} has too few rows for MethyLasso (<50000). Skipping analysis." > "\${outfile}.txt"

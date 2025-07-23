@@ -31,6 +31,11 @@ process FASTQC {
     done
     fastqc $args --threads $task.cpus $renamed_files
 
+    for f in *_fastqc.html *_fastqc.zip; do
+        newname="\${f/_fastqc/.fastqc}"
+        mv "\$f" "\$newname"
+    done
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         fastqc: \$( fastqc --version | sed '/FastQC v/!d; s/.*v//' )

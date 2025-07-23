@@ -19,10 +19,11 @@ process SAMTOOLS_SORT_INDEX {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    samtools sort -@ $task.cpus -o ${meta.id}.sorted.bam -T $meta.id $bam
+    def prefix = meta.prefix ?: meta.id
 
-    samtools index ${meta.id}.sorted.bam
+    """
+    samtools sort -@ $task.cpus -o "${prefix}.sorted.bam" -T "${prefix}" "$bam"
+    samtools index "${prefix}.sorted.bam"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

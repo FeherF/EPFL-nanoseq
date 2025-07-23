@@ -311,10 +311,10 @@ workflow NANOSEQ{
             */
             ALIGN_MINIMAP2 ( ch_fasta_index, ch_fastq )
             ch_align_sam = ALIGN_MINIMAP2.out.ch_align_sam
-            .map { meta, sizes, is_transcripts, sam_file -> 
-                meta.id = "${meta.id}.minimap2"
-                [ meta, sizes, is_transcripts, sam_file ]
-            }
+                .map { meta, sizes, is_transcripts, sam_file -> 
+                    def new_meta = meta + [prefix: "${meta.id}.minimap2"]
+                    [ new_meta, sizes, is_transcripts, sam_file ]
+                }
             ch_index = ALIGN_MINIMAP2.out.ch_index
             ch_software_versions = ch_software_versions.mix(ALIGN_MINIMAP2.out.minimap2_version.first().ifEmpty(null))
         } else {
@@ -324,10 +324,10 @@ workflow NANOSEQ{
              */
             ALIGN_GRAPHMAP2 ( ch_fasta_index, ch_fastq )
             ch_align_sam = ALIGN_GRAPHMAP2.out.ch_align_sam
-            .map { meta, sizes, is_transcripts, sam_file -> 
-                meta.id = "${meta.id}.graphmap"
-                [ meta, sizes, is_transcripts, sam_file ]
-            }              
+                .map { meta, sizes, is_transcripts, sam_file -> 
+                    def new_meta = meta + [prefix: "${meta.id}.graphmap"]
+                    [ new_meta, sizes, is_transcripts, sam_file ]
+                }            
             ch_index = ALIGN_GRAPHMAP2.out.ch_index
             ch_software_versions = ch_software_versions.mix(ALIGN_GRAPHMAP2.out.graphmap2_version.first().ifEmpty(null))
         }
