@@ -37,7 +37,7 @@ process DORADO_BASECALL {
 
     ${params.dorado_modification ? """
     samtools fastq -T MM,ML -@ $task.cpus ${meta.id}.bc.bam > ${meta.id}.bc.fastq
-    pigz -p${task.cpus} ${meta.id}.bc.fastq
+    pigz -p48 ${meta.id}.bc.fastq
     rm ${meta.id}.bc.bam
     """ : ""}
 
