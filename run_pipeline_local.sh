@@ -3,42 +3,33 @@
 ### === CONFIGURATION (edit these only) ===
 SAMPLE_NAME="sampleName"  
 INPUT_PATH="small_samples/small_NA12878_DNA.pod5"  # .pod5 file
-GTF_PATH=""                                     
+GTF_PATH=""       
+ONLY_BASECALLING=false
+SKIP_BASECALLING=false                             
 DORADO_MODEL="hac"                                 # hac or sup
 DORADO_MODIFICATION="5mCG_5hmCG"
 CALL_VARIANTS=true
-VARIANT_CALLER="clair3"
-CLAIR_MODEL="dorado_model"                         # Use same model as basecalling or choose one
-STRUCTURAL_VARIANT_CALLER="longcalld"
+VARIANT_CALLER="clair3"                 
+CLAIR_MODEL="dorado_model"                         # We use the same model used during basecalling with dorado, or choose one here https://github.com/nanoporetech/rerio/tree/master/clair3_models
+STRUCTURAL_VARIANT_CALLER="sniffles"               # longcalld or sniffles
 PHASE_WHATSHAP=true
 ANNOTATE_VCF=true
 ### =======================================
 
 # Output color
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-echo -e "\n${YELLOW}===== Starting EPFL-nanoseq Pipeline (Local Run) =====${NC}\n"
+NC='\033[0m' 
 
 cd ..
+echo -e "\n${YELLOW}===== Starting EPFL-nanoseq Pipeline (Local Run) =====${NC}\n"
 
 ### === ENVIRONMENT DETECTION ===
 if command -v nvidia-smi &>/dev/null && nvidia-smi -L &>/dev/null; then
     echo -e "${YELLOW}Detected NVIDIA GPUs. Running basecalling stage locally.${NC}\n"
-    GPU_PRESENT=true
     REFERENCE_FASTA="/data/upwaszak/public/genomes/GRCh38DH/GRCh38_full_analysis_set_plus_decoy_hla.fa"
     VEP_DATA_PATH="/data/upwaszak/bin/vep"
-    ONLY_BASECALLING="true"
-    SKIP_BASECALLING="false"
 else
     echo -e "${YELLOW}No NVIDIA GPUs detected. Running variant calling and downstream locally.${NC}\n"
-    GPU_PRESENT=false
-    SKIP_BASECALLING="true"
-    ONLY_BASECALLING="false"
-    INPUT_PATH=$(find results/dorado -maxdepth 1 -name '*.fastq.gz' | head -n 1)
-    if [[ "$CLAIR_MODEL" == "dorado_model" ]]; then
-        CLAIR_MODEL=$(sed -E 's/^dna_//; s/@v([0-9.]+)/_v\1/; s/\.//g' < results/dorado/model.txt)
-    fi
     REFERENCE_FASTA="/data/shared/genomes/human/GRCh38DH/GRCh38_full_analysis_set_plus_decoy_hla.fa"
     VEP_DATA_PATH="/data/bin/vep"
 fi

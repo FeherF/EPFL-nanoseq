@@ -22,7 +22,7 @@ We provide four wrapper scripts for common use cases:
 ### 4. `run_pipeline_skip_basecalling.sh`
 - Skips basecalling and runs all other steps locally (expects existing `.fastq.gz` input)
 
-Each script has a configuration section you can customize. You must provide a valid input file (`.pod5` or `.fastq.gz`), and tune parameters accordingly.
+Each script has a configuration section you can customize. You must provide a valid input file (`.pod5` or `.fastq.gz`), and tune parameters.
 
 Example configuration section:
 

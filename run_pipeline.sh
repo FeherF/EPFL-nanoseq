@@ -12,17 +12,18 @@ DORADO_MODEL="hac"                                 # hac or sup
 DORADO_MODIFICATION="5mCG_5hmCG"
 CALL_VARIANTS=true
 VARIANT_CALLER="clair3"
-CLAIR_MODEL="dorado_model"                         # We use the same model used during basecalling with dorado, otherwise choose one here https://github.com/nanoporetech/rerio/tree/master/clair3_models
-STRUCTURAL_VARIANT_CALLER="longcalld"
+CLAIR_MODEL="dorado_model"                         # We use the same model used during basecalling with dorado, or choose one here https://github.com/nanoporetech/rerio/tree/master/clair3_models
+STRUCTURAL_VARIANT_CALLER="longcalld"              # longcalld or sniffles
 PHASE_WHATSHAP=true
 ANNOTATE_VCF=true
 ### =======================================
 
 # Output color
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-echo -e "\n\033[1;33m===== Starting EPFL-nanoseq Pipeline (LOCAL+REMOTE RUN) =====\033[0m\n"
+NC='\033[0m' 
+
 cd ..
+echo -e "\n\033[1;33m===== Starting EPFL-nanoseq Pipeline (LOCAL+REMOTE RUN) =====\033[0m\n"
 
 ### === ENVIRONMENT DETECTION ===
 if command -v nvidia-smi &>/dev/null && nvidia-smi -L &>/dev/null; then
