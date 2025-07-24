@@ -3,9 +3,9 @@
 ### === CONFIGURATION (edit these only) ===
 REMOTE_HOST="upwaszaksrv1.epfl.ch"
 REMOTE_USER="feher"
+SAMPLE_NAME="sampleName"  
 REMOTE_DEST_DIR="${SAMPLE_NAME}"                   # Directory on TREX where restuls will be stored
 
-SAMPLE_NAME="sampleName"  
 INPUT_PATH="small_samples/small_NA12878_DNA.pod5"  # .pod5 file
 GTF_PATH=""                                     
 DORADO_MODEL="hac"                                 # hac or sup
@@ -21,7 +21,7 @@ ANNOTATE_VCF=true
 # Output color
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
-echo -e "\n\033[1;33m===== Starting EPFL-nanoseq Pipeline =====\033[0m\n"
+echo -e "\n\033[1;33m===== Starting EPFL-nanoseq Pipeline (LOCAL+REMOTE RUN) =====\033[0m\n"
 cd ..
 
 ### === ENVIRONMENT DETECTION ===
