@@ -1,12 +1,10 @@
-## EPFL-nanoseq Pipeline
-
-![Pipeline](assets/pipeline.png)
+![Pipeline](assets/pipeline.jpg)
 
 Custom [nf-core/nanoseq](https://nf-co.re/nanoseq) pipeline for Oxford Nanopore long-read sequencing, adapted for the UPWASZAK lab at EPFL: https://www.epfl.ch/labs/upwaszak
 
 ---
 
-## 🔧 How to Run the Pipeline
+# 🔧 How to Run the Pipeline
 
 We provide four wrapper scripts for common use cases:
 
@@ -50,7 +48,7 @@ ANNOTATE_VCF=true
 
 ---
 
-## 🛠 How to Modify the Pipeline
+# 🛠 How to Modify the Pipeline
 
 ### Change Parameters
 - Most parameters can be modified directly in the wrapper scripts (e.g., model type, input paths, tool settings).
@@ -69,7 +67,7 @@ To change behavior of a specific tool (e.g. Clair3):
 
 ---
 
-## 🧪 Custom Docker Containers
+### Custom Docker Containers
 
 Each module in the pipeline runs inside a container that includes all the necessary tools for that specific process (e.g., Clair3, LongCalld, etc.).
 
@@ -79,7 +77,7 @@ If you need a custom setup (e.g., additional tools, modified versions), you can 
 container 'docker.io/ff1997/methylasso:latest'
 ```
 
-### 🔨 Build & Push a Custom Container
+### Build & Push a Custom Container
 
 To create your own container and push on Docker Hub:
 
