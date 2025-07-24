@@ -111,6 +111,8 @@ def check_samplesheet(file_in, updated_path, file_out):
                     input_extensions.append("*.fastq.gz")
                 elif input_file.endswith(".fq.gz"):
                     input_extensions.append("*.fq.gz")
+                elif input_file.endswith(".pod5"):
+                    input_extensions.append("*.pod5")
                 elif input_file.endswith(".bam"):
                     input_extensions.append("*.bam")
                 else:
@@ -138,7 +140,7 @@ def check_samplesheet(file_in, updated_path, file_out):
                                         print_error('basecalled fastq input does not end with ".fastq.gz" or ".fq.gz"')
                         else:
                             print_error(
-                                'path does not end with ".fastq.gz", ".fq.gz", or ".bam" and is not an existing directory with correct fast5 and/or fastq inputs.'
+                                'path does not end with ".fastq.gz", ".fq.gz", or ".bam", or ".pod5" and is not an existing directory with correct fast5 and/or fastq inputs.'
                             )
 
             ## Check genome entries
@@ -210,10 +212,19 @@ def check_samplesheet(file_in, updated_path, file_out):
                     print_error("Replicate ids must start with 1..<num_replicates>!", "Group", sample)
 
                 ### Write to file
-                for replicate in sorted(sample_info_dict[sample].keys()):
-                    sample_id = "{}_R{}".format(sample, replicate)
-                    fout.write(",".join([sample_id] + sample_info_dict[sample][replicate]) + "\n")
-
+                # for replicate in sorted(sample_info_dict[sample].keys()):
+                #     sample_id = "{}_R{}".format(sample, replicate)
+                #     fout.write(",".join([sample_id] + sample_info_dict[sample][replicate]) + "\n")
+                
+                # If there is only one replicate, use the sample name as the sample id
+                replicates = sample_info_dict[sample]
+                for replicate in sorted(replicates.keys()):
+                    if len(replicates) == 1:
+                        sample_id = sample
+                    else:
+                        sample_id = "{}_R{}".format(sample, replicate)
+                    fout.write(",".join([sample_id] + replicates[replicate]) + "\n")
+ 
 
 def main(args=None):
     args = parse_args(args)

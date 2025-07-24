@@ -13,6 +13,7 @@ process SAMTOOLS_STATS {
 
     output:
     tuple val(meta), path("*.stats"), emit: stats
+    path "*.coverage"               , emit: coverage
     path  "versions.yml"            , emit: versions
 
     when:
@@ -29,6 +30,11 @@ process SAMTOOLS_STATS {
         ${reference} \\
         ${input} \\
         > ${prefix}.stats
+
+    samtools \\
+        coverage \\
+        ${input} \\
+        -o ${prefix}.coverage 
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

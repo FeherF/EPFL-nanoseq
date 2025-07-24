@@ -5,6 +5,26 @@
     "description": "A pipeline to demultiplex, QC and map Nanopore data",
     "type": "object",
     "definitions": {
+        "basecalling_option": {
+            "title": "Basecalling with Dorado",
+            "type": "object",
+            "description": "",
+            "default": "false",
+            "properties": {
+                "only_basecalling": {
+                    "type": "boolean"
+                },
+                "skip_basecalling": {
+                    "type": "boolean"
+                },
+                "dorado_model": {
+                    "type": "string"
+                },
+                "dorado_modification": {
+                    "type": "string"
+                }
+            }
+        },
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -36,7 +56,8 @@
                     "type": "string",
                     "format": "directory-path",
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
-                    "fa_icon": "fas fa-folder-open"
+                    "fa_icon": "fas fa-folder-open",
+                    "default": "./results"
                 },
                 "email": {
                     "type": "string",
@@ -165,8 +186,14 @@
                 },
                 "variant_caller": {
                     "type": "string",
-                    "default": "medaka",
+                    "default": "clair3",
                     "description": "Specifies the variant caller that will used to call small variants (available are: medaka, deepvariant, and pepper_margin_deepvariant). Variant calling is only available if '--call_variants' is set and the protocol is set to `DNA`. Please note `deepvariant` and `pepper_margin_deepvariant` are only avaible if using singularity or docker.",
+                    "fa_icon": "fas fa-bezier-curve"
+                },
+                "clair_model": {
+                    "type": "string",
+                    "default": "dorado_model",
+                    "description": "Specifies the model to use for variant calling with clair3 (check available models at https://github.com/nanoporetech/rerio/blob/master/clair3_models/). Example: r1041_e82_400bps_sup_v410.",
                     "fa_icon": "fas fa-bezier-curve"
                 },
                 "structural_variant_caller": {
@@ -189,6 +216,21 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-exchange-alt",
                     "description": "Specifies if vcf will be phased when using medaka."
+                },
+                "phase_whatshap": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-exchange-alt",
+                    "description": "Specifies if vcf will be phased using whatshap, after variant calling."
+                },
+                "annotate_vcf": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-exchange-alt",
+                    "description": "Specifies if vcf will be annotated using vcf2maf, after variant calling."
+                },
+                "vep_data_path": {
+                    "type": "string",
+                    "fa_icon": "fas fa-exchange-alt",
+                    "description": "Specifies the path of the vep data directory. If not specified, the default path will be used '/data/bin/vep/'."
                 },
                 "skip_vc": {
                     "type": "boolean",
@@ -235,7 +277,6 @@
             "properties": {
                 "jaffal_ref_dir": {
                     "type": "string",
-                    "default": "for_jaffal",
                     "description": "Specifies the reference directory for JAFFAL.",
                     "fa_icon": "fas fa-bezier-curve"
                 },
@@ -319,7 +360,7 @@
                     "type": "string",
                     "format": "directory-path",
                     "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes",
+                    "default": "s3://ngi-igenomes/igenomes/",
                     "fa_icon": "fas fa-cloud-download-alt",
                     "hidden": true
                 },
@@ -478,7 +519,7 @@
                 "tracedir": {
                     "type": "string",
                     "description": "Directory to keep pipeline Nextflow logs and reports.",
-                    "default": "${params.outdir}/pipeline_info",
+                    "default": "./results/pipeline_info",
                     "fa_icon": "fas fa-cogs",
                     "hidden": true
                 },
@@ -500,6 +541,9 @@
         }
     },
     "allOf": [
+        {
+            "$ref": "#/definitions/basecalling_option"
+        },
         {
             "$ref": "#/definitions/input_output_options"
         },
@@ -536,5 +580,11 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "schema_ignore_params": {
+            "type": "string",
+            "default": "genomes"
+        }
+    }
 }

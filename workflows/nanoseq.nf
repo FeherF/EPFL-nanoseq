@@ -69,14 +69,11 @@ if (params.call_variants) {
     if (params.protocol != 'DNA') {
         exit 1, "Invalid protocol option: ${params.protocol}. Valid options: 'DNA'"
     }
-    if (!params.skip_vc && params.variant_caller != 'medaka' && params.variant_caller != 'deepvariant' && params.variant_caller != 'pepper_margin_deepvariant') {
+    if (!params.skip_vc && params.variant_caller != 'medaka' && params.variant_caller != 'deepvariant' && params.variant_caller != 'pepper_margin_deepvariant' && params.variant_caller != 'clair3') {
         exit 1, "Invalid variant caller option: ${params.variant_caller}. Valid options: 'medaka', 'deepvariant' or 'pepper_margin_deepvariant'"
     }
-    if (!params.skip_sv && params.structural_variant_caller != 'sniffles' && params.structural_variant_caller != 'cutesv') {
-        exit 1, "Invalid structural variant caller option: ${params.structural_variant_caller}. Valid options: 'sniffles', 'cutesv"
-    }
-    if (!params.skip_vc && params.enable_conda && params.variant_caller != 'medaka') {
-        exit 1, "Conda environments cannot be used when using the deepvariant or pepper_margin_deepvariant tools. Valid options: 'docker', 'singularity'"
+    if (!params.skip_sv && params.structural_variant_caller != 'sniffles' && params.structural_variant_caller != 'cutesv' && params.structural_variant_caller != 'longcalld') {
+        exit 1, "Invalid structural variant caller option: ${params.structural_variant_caller}. Valid options: 'sniffles', 'cutesv', 'longcalld'"
     }
 }
 
@@ -111,20 +108,26 @@ include { MULTIQC               } from '../modules/local/multiqc'
  * SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
  */
 
-include { INPUT_CHECK                      } from '../subworkflows/local/input_check'
-include { PREPARE_GENOME                   } from '../subworkflows/local/prepare_genome'
-include { QCFASTQ_NANOPLOT_FASTQC          } from '../subworkflows/local/qcfastq_nanoplot_fastqc'
-include { ALIGN_GRAPHMAP2                  } from '../subworkflows/local/align_graphmap2'
-include { ALIGN_MINIMAP2                   } from '../subworkflows/local/align_minimap2'
-include { BAM_SORT_INDEX_SAMTOOLS          } from '../subworkflows/local/bam_sort_index_samtools'
-include { SHORT_VARIANT_CALLING            } from '../subworkflows/local/short_variant_calling'
-include { STRUCTURAL_VARIANT_CALLING       } from '../subworkflows/local/structural_variant_calling'
-include { BEDTOOLS_UCSC_BIGWIG             } from '../subworkflows/local/bedtools_ucsc_bigwig'
-include { BEDTOOLS_UCSC_BIGBED             } from '../subworkflows/local/bedtools_ucsc_bigbed'
-include { QUANTIFY_STRINGTIE_FEATURECOUNTS } from '../subworkflows/local/quantify_stringtie_featurecounts'
-include { DIFFERENTIAL_DESEQ2_DEXSEQ       } from '../subworkflows/local/differential_deseq2_dexseq'
-include { RNA_MODIFICATION_XPORE_M6ANET    } from '../subworkflows/local/rna_modifications_xpore_m6anet'
-include { RNA_FUSIONS_JAFFAL               } from '../subworkflows/local/rna_fusions_jaffal'
+include { INPUT_CHECK                                               } from '../subworkflows/local/input_check'
+include { BASECALL_DORADO                                           } from '../subworkflows/local/basecall_dorado'
+include { PREPARE_GENOME                                            } from '../subworkflows/local/prepare_genome'
+include { QCFASTQ_NANOPLOT_FASTQC                                   } from '../subworkflows/local/qcfastq_nanoplot_fastqc'
+include { ALIGN_GRAPHMAP2                                           } from '../subworkflows/local/align_graphmap2'
+include { ALIGN_MINIMAP2                                            } from '../subworkflows/local/align_minimap2'
+include { BAM_SORT_INDEX_SAMTOOLS                                   } from '../subworkflows/local/bam_sort_index_samtools'
+include { DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO               } from '../subworkflows/local/dna_modification_analysis_modkit_methylasso'
+include { DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED   } from '../subworkflows/local/dna_modification_analysis_modkit_methylasso_haplotagged'
+include { SHORT_VARIANT_CALLING                                     } from '../subworkflows/local/short_variant_calling'
+include { STRUCTURAL_VARIANT_CALLING                                } from '../subworkflows/local/structural_variant_calling'
+include { PHASE_WHATSHAP                                            } from '../subworkflows/local/phase_whatshap'
+include { ANNOTATE_VCF2MAF as ANNOTATE_SHORT_VARIANT_VCF2MAF        } from '../subworkflows/local/annotate_vcf2maf'
+include { ANNOTATE_VCF2MAF as ANNOTATE_STRUCTURAL_VARIANT_VCF2MAF   } from '../subworkflows/local/annotate_vcf2maf'
+include { BEDTOOLS_UCSC_BIGWIG                                      } from '../subworkflows/local/bedtools_ucsc_bigwig'
+include { BEDTOOLS_UCSC_BIGBED                                      } from '../subworkflows/local/bedtools_ucsc_bigbed'
+include { QUANTIFY_STRINGTIE_FEATURECOUNTS                          } from '../subworkflows/local/quantify_stringtie_featurecounts'
+include { DIFFERENTIAL_DESEQ2_DEXSEQ                                } from '../subworkflows/local/differential_deseq2_dexseq'
+include { RNA_MODIFICATION_XPORE_M6ANET                             } from '../subworkflows/local/rna_modifications_xpore_m6anet'
+include { RNA_FUSIONS_JAFFAL                                        } from '../subworkflows/local/rna_fusions_jaffal'
 
 ////////////////////////////////////////////////////
 /* --    IMPORT NF-CORE MODULES/SUBWORKFLOWS   -- */
@@ -179,34 +182,76 @@ workflow NANOSEQ{
      * Create empty software versions channel to mix
      */
     ch_software_versions = Channel.empty()
-
     /*
      * SUBWORKFLOW: Read in samplesheet, validate and stage input files
      */
     INPUT_CHECK ( ch_input, ch_input_path )
         .set { ch_sample }
 
-    if (!params.skip_demultiplexing) {
-
-        /*
-         * MODULE: Demultipexing using qcat
-         */
-        QCAT ( ch_input_path )
-        ch_fastq = Channel.empty()
-        QCAT.out.fastq
-            .flatten()
-            .map { it -> [ it, it.baseName.substring(0,it.baseName.lastIndexOf('.'))] }
-            .join(ch_sample, by: 1) // join on barcode
-            .map { it -> [ it[2], it[1], it[3], it[4], it[5], it[6] ] }
-            .set { ch_fastq }
-        ch_software_versions = ch_software_versions.mix(QCAT.out.versions.ifEmpty(null))
-    } else {
-        if (!params.skip_alignment) {
-            ch_sample
-                .map { it -> if (it[6].toString().endsWith('.gz')) [ it[0], it[6], it[2], it[1], it[4], it[5] ] }
-                .set { ch_fastq }
+    if (!params.skip_basecalling) {
+        // Get .pod5 files (from --input_path or sample sheet)
+        if (params.skip_demultiplexing) {
+            ch_pod5 = ch_sample.map { [ it[0], file(it[-2]) ] }
         } else {
-            ch_fastq = Channel.empty()
+            ch_pod5 = ch_input_path.map { 
+                def filePath = it.toString() 
+                def fileName = filePath.tokenize('/').last().replaceAll(/\.pod5$/, '') 
+                def meta = [ id: fileName ]
+                tuple(meta, file(filePath)) 
+            }
+        }
+
+        // Validate .pod5 files
+        ch_pod5 = ch_pod5.map { tuple ->
+            def pod5 = tuple[-1]
+            if (!pod5.name.endsWith('.pod5')) exit 1, "Input must be .pod5 if basecalling is enabled: $pod5"
+            if (!pod5.exists()) exit 1, "Missing file: $pod5"
+            return tuple
+        }
+
+        BASECALL_DORADO(ch_pod5)
+        ch_software_versions = BASECALL_DORADO.out.dorado_version.first().ifEmpty(null)
+        def ch_basecalled_fastq = BASECALL_DORADO.out.ch_basecalled_fastq
+
+        if (!params.skip_demultiplexing) {
+            ch_input_path = ch_basecalled_fastq.map { it[1] }
+            QCAT(ch_input_path)
+            ch_fastq = QCAT.out.fastq
+                .flatten()
+                .map { [ it, it.baseName.substring(0,it.baseName.lastIndexOf('.'))] }
+                .join(ch_sample, by: 1)
+                .map { it -> [ it[2], it[1], it[3], it[4], it[5], it[6] ] }
+            ch_software_versions = ch_software_versions.mix(QCAT.out.versions.ifEmpty(null))
+        } else {
+            // Replace input path with basecalled .fastq path
+            ch_sample = ch_sample
+                .map { row -> [ row[0], row ] }
+                .join(ch_basecalled_fastq, by: 0)
+                .map { [ it[1][0], it[1][1], it[1][2], it[1][3], it[1][4], it[1][5], it[2] ] }
+
+            if (!params.skip_alignment) {
+                ch_fastq = ch_sample.map { it -> it[6].toString().endsWith('.gz') ? [ it[0], it[6], it[2], it[1], it[4], it[5] ] : null }
+            } else {
+                ch_fastq = Channel.empty()
+            }
+        }
+
+        if (params.only_basecalling) { return } // Exit workflow if only basecalling is requested
+        
+    } else {
+        // basecalling is skipped
+        if (!params.skip_demultiplexing) {
+            QCAT(ch_input_path)
+            ch_fastq = QCAT.out.fastq
+                .flatten()
+                .map { [ it, it.baseName.substring(0,it.baseName.lastIndexOf('.'))] }
+                .join(ch_sample, by: 1)
+                .map { it -> [ it[2], it[1], it[3], it[4], it[5], it[6] ] }
+            ch_software_versions = ch_software_versions.mix(QCAT.out.versions.ifEmpty(null))
+        } else {
+            ch_fastq = !params.skip_alignment
+                ? ch_sample.map { it -> it[6].toString().endsWith('.gz') ? [ it[0], it[6], it[2], it[1], it[4], it[5] ] : null }
+                : Channel.empty()
         }
     }
 
@@ -268,6 +313,10 @@ workflow NANOSEQ{
             */
             ALIGN_MINIMAP2 ( ch_fasta_index, ch_fastq )
             ch_align_sam = ALIGN_MINIMAP2.out.ch_align_sam
+                .map { meta, sizes, is_transcripts, sam_file -> 
+                    def new_meta = meta + [prefix: "${meta.id}.minimap2"]
+                    [ new_meta, sizes, is_transcripts, sam_file ]
+                }
             ch_index = ALIGN_MINIMAP2.out.ch_index
             ch_software_versions = ch_software_versions.mix(ALIGN_MINIMAP2.out.minimap2_version.first().ifEmpty(null))
         } else {
@@ -277,6 +326,10 @@ workflow NANOSEQ{
              */
             ALIGN_GRAPHMAP2 ( ch_fasta_index, ch_fastq )
             ch_align_sam = ALIGN_GRAPHMAP2.out.ch_align_sam
+                .map { meta, sizes, is_transcripts, sam_file -> 
+                    def new_meta = meta + [prefix: "${meta.id}.graphmap"]
+                    [ new_meta, sizes, is_transcripts, sam_file ]
+                }            
             ch_index = ALIGN_GRAPHMAP2.out.ch_index
             ch_software_versions = ch_software_versions.mix(ALIGN_GRAPHMAP2.out.graphmap2_version.first().ifEmpty(null))
         }
@@ -288,13 +341,43 @@ workflow NANOSEQ{
         ch_view_sortbam = BAM_SORT_INDEX_SAMTOOLS.out.sortbam
         ch_software_versions = ch_software_versions.mix(BAM_SORT_INDEX_SAMTOOLS.out.samtools_versions.first().ifEmpty(null))
         ch_samtools_multiqc  = BAM_SORT_INDEX_SAMTOOLS.out.sortbam_stats_multiqc.ifEmpty([])
+       
+        /*
+         * SUBWORKFLOW: DNA modification analysis with modkit
+         */
+
+        if (params.protocol == 'DNA') {
+            ch_view_sortbam
+                .map { it -> [ it[0], it[3], it[4] ] } // meta.id, bam, bam index
+                .set { ch_modkit_input } 
+            DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO ( ch_modkit_input, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }  )
+            ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO.out.modkit_versions.first().ifEmpty(null))
+        }
+
 
         if (params.call_variants && params.protocol == 'DNA') {
             /*
             * SUBWORKFLOW: Short variant calling
             */
             if (!params.skip_vc) {
-                SHORT_VARIANT_CALLING ( ch_view_sortbam, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] } )
+                def ch_clair3_model
+
+                if (!params.skip_basecalling) {
+                    // We match the model used during basecalling
+                    if (params.clair_model == "dorado_model" || params.clair_model == null) {
+                        ch_clair3_model = BASECALL_DORADO.out.ch_used_model.map { file -> file.text }
+                    } else {
+                        ch_clair3_model = params.clair_model
+                    }
+                }
+                else {
+                    if (params.clair_model == "dorado_model" || params.clair_model == null) {
+                        exit 1, "Please specify a valid model for clair3 variant calling, e.g. '--clair_model = r1041_e82_400bps_sup_v410'. Check https://github.com/nanoporetech/rerio/tree/master/clair3_models."
+                    }
+                    ch_clair3_model = params.clair_model
+                }
+                SHORT_VARIANT_CALLING ( ch_view_sortbam, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }, ch_clair3_model )
+                ch_vcf = SHORT_VARIANT_CALLING.out.ch_short_calls_vcf
                 ch_software_versions = ch_software_versions.mix(SHORT_VARIANT_CALLING.out.ch_versions.first().ifEmpty(null))
             }
 
@@ -303,7 +386,40 @@ workflow NANOSEQ{
             */
             if (!params.skip_sv) {
                 STRUCTURAL_VARIANT_CALLING ( ch_view_sortbam, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] } )
+                ch_sv_vcf = STRUCTURAL_VARIANT_CALLING.out.ch_sv_calls_vcf
                 ch_software_versions = ch_software_versions.mix(STRUCTURAL_VARIANT_CALLING.out.ch_versions.first().ifEmpty(null))
+            }
+
+
+            /*
+            * SUBWORKFLOW: Annotate variants with vcf2maf
+            */
+            if (!params.skip_vc && params.annotate_vcf) {
+                
+                def ch_vep_data = nextflow.Channel.value(params.vep_data_path)
+                ANNOTATE_SHORT_VARIANT_VCF2MAF(ch_vcf, ch_fasta.map { it[1] }, ch_fai.map { it[1] }, ch_vep_data)
+                ANNOTATE_STRUCTURAL_VARIANT_VCF2MAF(ch_sv_vcf, ch_fasta.map { it[1] }, ch_fai.map { it[1] }, ch_vep_data)
+            }
+
+
+            /*
+            * SUBWORKFLOW: Phasing with WhatsHap
+            */
+            if (params.phase_whatshap && params.call_variants && !params.skip_vc) {
+                ch_view_sortbam_cleaned = ch_view_sortbam.map { it -> [ it[3], it[4] ] }
+                PHASE_WHATSHAP( ch_view_sortbam_cleaned, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }, ch_vcf )
+                ch_first_haplotype = PHASE_WHATSHAP.out.ch_first_haplotagged_bam
+                ch_second_haplotype = PHASE_WHATSHAP.out.ch_second_haplotagged_bam
+                ch_software_versions = ch_software_versions.mix(PHASE_WHATSHAP.out.ch_versions.first().ifEmpty(null))
+
+                /*
+                * Call haplotype-specific modifications with modkit
+                */
+                // Extract meta from ch_view_sortbam
+                ch_meta = ch_view_sortbam.map{ it [0] }
+
+                DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED ( ch_meta, ch_first_haplotype, ch_second_haplotype, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }  )
+                ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED.out.modkit_versions.first().ifEmpty(null))
             }
         }
 

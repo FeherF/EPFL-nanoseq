@@ -24,6 +24,7 @@ process BEDTOOLS_BAMBED {
         -cigar \\
         -i ${bam[0]} \\
         | bedtools sort > ${meta.id}.bed12
+        
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bedtools: \$(bedtools --version | sed -e "s/bedtools v//g")

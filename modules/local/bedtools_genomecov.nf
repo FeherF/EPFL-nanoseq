@@ -1,11 +1,8 @@
 process BEDTOOLS_GENOMECOV {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
-    conda "bioconda::bedtools=2.29.2"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bedtools:2.29.2--hc088bd4_0' :
-        'quay.io/biocontainers/bedtools:2.29.2--hc088bd4_0' }"
+    container 'docker.io/ff1997/bedtools-sort:latest'
 
     input:
     tuple val(meta), path(sizes), val(is_transcripts), path(bam), path(bai)
@@ -19,13 +16,18 @@ process BEDTOOLS_GENOMECOV {
 
     script:
     split = (params.protocol == 'DNA' || is_transcripts) ? "" : "-split"
+    mem_size = task.memory.toString().replaceAll(/\s*B$/, '').replaceAll(/\s+/, '')
+
     """
     bedtools \\
         genomecov \\
         -split \\
         -ibam ${bam[0]} \\
         -bg \\
-        | bedtools sort > ${meta.id}.bedGraph
+        > tmp.bg
+
+    sort -k1,1 -k2,2n --parallel=${task.cpus} --buffer-size=${mem_size} tmp.bg > ${meta.id}.bedGraph
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bedtools: \$(bedtools --version | sed -e "s/bedtools v//g")

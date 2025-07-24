@@ -1,6 +1,6 @@
 process MINIMAP2_ALIGN {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
     conda "bioconda::minimap2=2.17"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -25,6 +25,7 @@ process MINIMAP2_ALIGN {
     def md        = (params.call_variants && params.protocol == 'DNA') ? "--MD" : ""
     """
     minimap2 \\
+        -y \\
         $preset \\
         $kmer \\
         $stranded \\
@@ -33,7 +34,7 @@ process MINIMAP2_ALIGN {
         -t $task.cpus \\
         $index \\
         $fastq > ${meta.id}.sam
-
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         minimap2: \$(minimap2 --version 2>&1)

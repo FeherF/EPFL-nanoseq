@@ -29,7 +29,11 @@ workflow INPUT_CHECK {
 def get_sample_info(LinkedHashMap sample, LinkedHashMap genomeMap) {
     def meta = [:]
     meta.id  = sample.sample
-
+    if (params.protocol == 'DNA') {
+        meta.id = meta.id + '.dna'
+    } else if (params.protocol == 'RNA') {
+        meta.id = meta.id + '.rna'
+    }
     // Resolve fasta and gtf file if using iGenomes
     def fasta = false
     def gtf   = false
