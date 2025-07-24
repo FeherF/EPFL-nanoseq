@@ -2,7 +2,7 @@
 
 ### === CONFIGURATION (edit these only) ===
 REMOTE_HOST="upwaszaksrv1.epfl.ch"
-REMOTE_USER="feher"
+REMOTE_USER="${USER}"
 SAMPLE_NAME="sampleName"  
 REMOTE_DEST_DIR="${SAMPLE_NAME}"                   # Directory on TREX where restuls will be stored
 
