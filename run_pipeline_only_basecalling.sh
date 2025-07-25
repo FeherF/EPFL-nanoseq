@@ -4,16 +4,10 @@
 SAMPLE_NAME="sampleName"  
 INPUT_PATH="small_samples/small_NA12878_DNA.pod5"  # .pod5 file
 GTF_PATH=""       
-ONLY_BASECALLING=false
+ONLY_BASECALLING=true
 SKIP_BASECALLING=false                             
 DORADO_MODEL="hac"                                 # hac or sup
 DORADO_MODIFICATION="5mCG_5hmCG"
-CALL_VARIANTS=true
-VARIANT_CALLER="clair3"                 
-CLAIR_MODEL="dorado_model"                         # We use the same model used during basecalling with dorado, or choose one here https://github.com/nanoporetech/rerio/tree/master/clair3_models
-STRUCTURAL_VARIANT_CALLER="sniffles"               # longcalld or sniffles
-PHASE_WHATSHAP=true
-ANNOTATE_VCF=true
 ### =======================================
 
 # Output color
@@ -21,7 +15,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' 
 
 cd ..
-echo -e "\n${YELLOW}===== Starting EPFL-nanoseq Pipeline (Full Local Run) =====${NC}\n"
+echo -e "\n${YELLOW}===== Starting EPFL-nanoseq Pipeline (Only Basecalling) =====${NC}\n"
 
 ### === ENVIRONMENT DETECTION ===
 if command -v nvidia-smi &>/dev/null && nvidia-smi -L &>/dev/null; then
@@ -47,13 +41,6 @@ echo -e "${YELLOW}  only_basecalling = ${ONLY_BASECALLING}${NC}"
 echo -e "${YELLOW}  skip_basecalling = ${SKIP_BASECALLING}${NC}"
 echo -e "${YELLOW}  dorado_model = ${DORADO_MODEL}${NC}"
 echo -e "${YELLOW}  dorado_modification = ${DORADO_MODIFICATION}${NC}"
-echo -e "${YELLOW}  call_variants = ${CALL_VARIANTS}${NC}"
-echo -e "${YELLOW}  variant_caller = ${VARIANT_CALLER}${NC}"
-echo -e "${YELLOW}  clair_model = ${CLAIR_MODEL}${NC}"
-echo -e "${YELLOW}  structural_variant_caller = ${STRUCTURAL_VARIANT_CALLER}${NC}"
-echo -e "${YELLOW}  phase_whatshap = ${PHASE_WHATSHAP}${NC}"
-echo -e "${YELLOW}  annotate_vcf = ${ANNOTATE_VCF}${NC}"
-echo -e "${YELLOW}  vep_data_path = ${VEP_DATA_PATH}${NC}"
 
 CMD="nextflow run EPFL-nanoseq \
   --input samplesheet.csv \
@@ -63,13 +50,6 @@ CMD="nextflow run EPFL-nanoseq \
   --skip_basecalling ${SKIP_BASECALLING} \
   --dorado_model '${DORADO_MODEL}' \
   --dorado_modification '${DORADO_MODIFICATION}' \
-  --call_variants ${CALL_VARIANTS} \
-  --variant_caller '${VARIANT_CALLER}' \
-  --clair_model '${CLAIR_MODEL}' \
-  --structural_variant_caller '${STRUCTURAL_VARIANT_CALLER}' \
-  --phase_whatshap ${PHASE_WHATSHAP} \
-  --annotate_vcf ${ANNOTATE_VCF} \
-  --vep_data_path '${VEP_DATA_PATH}' \
   -resume"
 
 echo -e "\n${YELLOW}Running Nextflow pipeline...${NC}"

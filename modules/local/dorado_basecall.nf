@@ -8,13 +8,13 @@ process DORADO_BASECALL {
     tuple val(meta), path(pod5_path)
 
     output:
-    tuple val(meta), path("*bc.fastq.gz")  , emit: dorado_out
-    path("model.txt")                      , emit: model
-    path "versions.yml"                    , emit: versions
+    tuple val(meta), path("*dorado.fastq.gz")  , emit: dorado_out
+    path("model.txt")                          , emit: model
+    path "versions.yml"                        , emit: versions
 
     script:
 
-    def emit_args = (params.dorado_modification == null) ? "--emit-fastq > ${meta.id}.bc.fastq && gzip ${meta.id}.bc.fastq" : "--modified-bases $params.dorado_modification > ${meta.id}.bc.bam"
+    def emit_args = (params.dorado_modification == null) ? "--emit-fastq > ${meta.id}.dorado.fastq && gzip ${meta.id}.dorado.fastq" : "--modified-bases $params.dorado_modification > ${meta.id}.dorado.bam"
     def dorado_model = (params.dorado_model == null) ? "hac" : params.dorado_model
 
     """
@@ -36,9 +36,9 @@ process DORADO_BASECALL {
     echo "\$model_line" > model.txt
 
     ${params.dorado_modification ? """
-    samtools fastq -T MM,ML -@ $task.cpus ${meta.id}.bc.bam > ${meta.id}.bc.fastq
-    pigz -p48 ${meta.id}.bc.fastq
-    rm ${meta.id}.bc.bam
+    samtools fastq -T MM,ML -@ $task.cpus ${meta.id}.dorado.bam > ${meta.id}.dorado.fastq
+    pigz -p48 ${meta.id}.dorado.fastq
+    rm ${meta.id}.dorado.bam
     """ : ""}
 
     rm -rf $dorado_model
