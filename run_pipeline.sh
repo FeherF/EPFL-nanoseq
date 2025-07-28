@@ -6,7 +6,7 @@ REMOTE_USER="${USER}"
 SAMPLE_NAME="sampleName"  
 REMOTE_DEST_DIR="${SAMPLE_NAME}"                   # Directory on TREX where restuls will be stored
 
-INPUT_PATH="small_samples/small_NA12878_DNA.pod5"  # .pod5 file
+INPUT_PATH="small_samples/medium_NA12878_DNA.pod5"  # .pod5 file
 GTF_PATH=""                                     
 DORADO_MODEL="hac"                                 # hac or sup
 DORADO_MODIFICATION="5mCG_5hmCG"
@@ -117,6 +117,8 @@ if $GPU_PRESENT; then
     rsync -avz --delete --quiet "${LOCAL_PIPELINE_DIR}/" "${REMOTE_USER}@${REMOTE_HOST}:~/${REMOTE_DEST_DIR}/EPFL-nanoseq/"
     rsync -avz --quiet "${LOCAL_RESULTS_DIR}/" "${REMOTE_USER}@${REMOTE_HOST}:~/${REMOTE_DEST_DIR}/results/"
 
+    rm -rf work results samplesheet.csv
+    
     if [[ $? -eq 0 ]]; then
         echo -e "${YELLOW}✅ Sync complete.${NC}"
     else
@@ -144,4 +146,4 @@ if $GPU_PRESENT; then
     '
 fi
 
-echo -e "\n\033[1;33m===== Pipeline Completed (BMO sync + TREX launch) =====\033[0m\n"
+echo -e "\n\033[1;33m===== Pipeline will now continue on TREX (BMO sync + TREX launch) =====\033[0m\n"
