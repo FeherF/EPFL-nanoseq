@@ -56,7 +56,7 @@ process METHYLASSO_ANALYSE_HAPLOTAGGED {
                 fi
             done
         else
-            echo "Sample \${hap} has too few rows for MethyLasso (<50000). Skipping analysis." > "\${outfile}.log"
+            echo "Sample \${hap} has too few rows for MethyLasso (<50000). Skipping analysis." > "\${outfile}.log.tsv"
         fi
     }
 

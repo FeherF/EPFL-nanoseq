@@ -51,7 +51,7 @@ process METHYLASSO_ANALYSE {
         if [ -s "\$infile" ] && [ \$(wc -l < "\$infile") -ge 50000 ]; then
             Rscript /opt/methylasso/MethyLasso.R --n1 ${meta.id}.methylasso --c1 "\$infile" --cov 4 --meth 5 -t 20 -o "."
         else
-            echo "Sample m has too few rows for MethyLasso (<50000). Skipping analysis." > "\${outfile}.log"
+            echo "Sample m has too few rows for MethyLasso (<50000). Skipping analysis." > "\${outfile}.log.tsv"
         fi
     }
 

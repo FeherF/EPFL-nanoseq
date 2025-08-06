@@ -6,7 +6,7 @@ REMOTE_USER="${USER}"
 SAMPLE_NAME="NA12878"  
 REMOTE_DEST_DIR="${SAMPLE_NAME}"                   # Directory on TREX where restuls will be stored
 
-INPUT_PATH="small_samples/NA12878_DNA.pod5"  # .pod5 file
+INPUT_PATH="small_samples/NA12878_DNA.pod5"        # .pod5 file
 GTF_PATH=""                                     
 DORADO_MODEL="hac"                                 # hac or sup
 DORADO_MODIFICATION="5mCG_5hmCG"
