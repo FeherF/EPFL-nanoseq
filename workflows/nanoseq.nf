@@ -345,10 +345,9 @@ workflow NANOSEQ{
         /*
          * SUBWORKFLOW: DNA modification analysis with modkit
          */
-
         if (params.protocol == 'DNA') {
             ch_view_sortbam
-                .map { it -> [ it[0], it[3], it[4] ] } // meta.id, bam, bam index
+                .map { it -> [ it[0], it[1], it[3], it[4] ] } // meta.id, sizes, bam, bam index
                 .set { ch_modkit_input } 
             DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO ( ch_modkit_input, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }  )
             ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO.out.modkit_versions.first().ifEmpty(null))
@@ -415,10 +414,11 @@ workflow NANOSEQ{
                 /*
                 * Call haplotype-specific modifications with modkit
                 */
-                // Extract meta from ch_view_sortbam
-                ch_meta = ch_view_sortbam.map{ it [0] }
+                ch_view_sortbam
+                .map { it -> [ it[0], it[1] ] } // meta.id, sizes
+                .set { ch_modkit_input } 
 
-                DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED ( ch_meta, ch_first_haplotype, ch_second_haplotype, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }  )
+                DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED ( ch_modkit_input, ch_first_haplotype, ch_second_haplotype, ch_fasta.map{ it [1] }, ch_fai.map{ it [1] }  )
                 ch_software_versions = ch_software_versions.mix(DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED.out.modkit_versions.first().ifEmpty(null))
             }
         }

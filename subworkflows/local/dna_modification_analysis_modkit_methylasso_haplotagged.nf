@@ -7,7 +7,7 @@ include { METHYLASSO_ANALYSE_HAPLOTAGGED } from '../../modules/local/methylasso_
 
 workflow DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED {
     take:
-    ch_meta
+    ch_view_sortbam
     ch_first_haplotype
     ch_second_haplotype
     ch_fasta
@@ -22,7 +22,7 @@ workflow DNA_MODIFICATION_ANALYSIS_MODKIT_METHYLASSO_HAPLOTAGGED {
      * Analyze DNA modifications with modkit
      * This will produce a bed file with the modification calls
      */
-    MODKIT_PILEUP_HAPLOTAGGED( ch_meta, ch_first_haplotype, ch_second_haplotype, ch_fasta, ch_fai )
+    MODKIT_PILEUP_HAPLOTAGGED( ch_view_sortbam, ch_first_haplotype, ch_second_haplotype, ch_fasta, ch_fai )
     mc_bed = MODKIT_PILEUP_HAPLOTAGGED.out.mc_calls
    
     /*

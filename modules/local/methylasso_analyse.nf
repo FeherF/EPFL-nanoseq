@@ -49,17 +49,24 @@ process METHYLASSO_ANALYSE {
         local outfile="m"
 
         if [ -s "\$infile" ] && [ \$(wc -l < "\$infile") -ge 50000 ]; then
-            Rscript /opt/methylasso/MethyLasso.R --n1 healthy --c1 "\$infile" --cov 4 --meth 5 -t 20 -o "."
+            Rscript /opt/methylasso/MethyLasso.R --n1 ${meta.id}.methylasso --c1 "\$infile" --cov 4 --meth 5 -t 20 -o "."
         else
-            echo "Sample m has too few rows for MethyLasso (<50000). Skipping analysis." > "\${outfile}.txt"
+            echo "Sample m has too few rows for MethyLasso (<50000). Skipping analysis." > "\${outfile}.log"
         fi
     }
 
     run_methylasso_or_warn
-    
+
+    for file in *; do
+        if [[ -f "\$file" && "\$file" == *"_"* ]]; then
+            newname="\${file//_/.}"
+            mv -- "\$file" "\$newname"
+        fi
+    done
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-    methylasso: \$(Rscript /opt/methylasso/MethyLasso.R --version | grep 'MethyLasso version' | cut -d' ' -f3)
+        methylasso: \$(Rscript /opt/methylasso/MethyLasso.R --version | grep 'MethyLasso version' | cut -d' ' -f3)
     END_VERSIONS
     """
 

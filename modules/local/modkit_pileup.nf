@@ -1,21 +1,20 @@
+// Here best practice would be to use differnt subworkflows for modkit and bedgraphtobigwig, but we keep here for simplicity
 process MODKIT_PILEUP {
     tag "$meta.id"
     label 'process_high'
 
-    conda "bioconda::ont-modkit=0.5.0"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/ont-modkit:0.4.3--hcdda2d0_0' :
-        'quay.io/biocontainers/ont-modkit:0.4.3--hcdda2d0_0' }"
+    container 'docker.io/ff1997/modkit-samtools-bedgraphtobigwig:latest'
 
     input:
-    tuple val(meta), path(bam), path(index)
+    tuple val(meta), path(sizes), path(bam), path(index)
     path(fasta)
     path(fai)
 
     output:
     tuple val(meta), path("*modkit.bed")      , emit: mc_calls
-    path("*.modkit.bedgraph")                  , emit: mc_bedgraph
-    path "versions.yml"                 , emit: versions
+    path("*.bedgraph")                        , emit: mc_bedgraph
+    path("*.bw")                              , emit: mc_bw
+    path "versions.yml"                       , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -31,16 +30,24 @@ process MODKIT_PILEUP {
 
     modkit pileup \\
     ${bam} \\
-    ./${meta.id}.cpg.5mc.modkit.bedgraph \\
+    . \\
+    --prefix ${meta.id}.cpg.5mc.modkit \\
     --bedgraph \\
     --ref ${fasta} \\
     --preset traditional \\
     --threads ${task.cpus}
 
-    
+    for file in *.bedgraph; do
+        base=\${file%.bedgraph}
+        awk '{ print \$1, \$2, \$3, \$4 }' "\$file" > "\${base}.filtered.bedgraph"
+        bedGraphToBigWig "\${base}.filtered.bedgraph" "${sizes.getName()}" "\${base}.bw"
+        rm "\${base}.filtered.bedgraph"
+    done
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         modkit: \$(modkit -V | sed 's/^[^ ]* //')
     END_VERSIONS
     """
 }
+

@@ -69,7 +69,7 @@ process WHATSHAP_PHASE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        whatshap: \$(echo \$(whatshap --version 2>&1) | sed -r 's/.{81}//')
+      whatshap: \$(echo \$(whatshap --version 2>&1) | sed -r 's/.{81}//')
     END_VERSIONS
     """
 }
