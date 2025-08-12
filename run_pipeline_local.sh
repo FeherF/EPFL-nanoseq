@@ -2,7 +2,7 @@
 
 ### === CONFIGURATION (edit these only) ===
 SAMPLE_NAME="sampleName"  
-INPUT_PATH="small_samples/medium_NA12878_DNA.pod5"  # .pod5 file
+INPUT_PATH="small_samples/medium_NA12878_DNA.pod5" # .pod5 file
 GTF_PATH=""       
 ONLY_BASECALLING=false
 SKIP_BASECALLING=false                             
